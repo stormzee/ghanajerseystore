@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPool, ensureSchema } from '@/lib/db';
+import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +24,28 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await ensureSchema();
+    const { searchParams } = new URL(request.url);
+    const emailParam = searchParams.get('email');
+
+    // If an email query param is present, return only that user's orders (for tracking).
+    // Admin can fetch all orders (no email filter) after authentication.
+    if (emailParam) {
+      const result = await getPool().query(
+        'SELECT * FROM orders WHERE LOWER(email)=LOWER($1) ORDER BY created_at DESC',
+        [emailParam]
+      );
+      return NextResponse.json(result.rows);
+    }
+
+    // Admin-only: fetch all orders
+    const session = await auth();
+    if (session?.user?.email !== process.env.ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const result = await getPool().query('SELECT * FROM orders ORDER BY created_at DESC');
     return NextResponse.json(result.rows);
   } catch (error) {

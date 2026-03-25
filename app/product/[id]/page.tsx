@@ -5,19 +5,33 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { products } from '@/lib/products';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart, ArrowLeft, Check } from 'lucide-react';
+import { Product } from '@/lib/products';
+import { useEffect } from 'react';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const product = products.find(p => p.id === Number(id));
-  if (!product) notFound();
-
   const { addItem } = useCart();
+  const [product, setProduct] = useState<Product | null | undefined>(undefined);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.json())
+      .then((list: Product[]) => {
+        const found = list.find(p => p.id === Number(id));
+        setProduct(found ?? null);
+      })
+      .catch(() => setProduct(null));
+  }, [id]);
+
+  if (product === undefined) {
+    return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-400">Loading…</div>;
+  }
+  if (product === null) notFound();
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -55,7 +69,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         {/* Details */}
         <div className="flex flex-col">
           <span className="inline-block bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider w-fit mb-3">
-            {categoryLabels[product.category]}
+            {categoryLabels[product.category] ?? product.category}
           </span>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
           <p className="text-3xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</p>
