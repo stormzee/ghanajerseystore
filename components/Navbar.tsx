@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Menu, X, Star, LogIn, LogOut, Package } from 'lucide-react';
+import { ShoppingCart, Menu, X, Star, LogOut } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { useSession, signIn, signOut } from 'next-auth/react';
-import Image from 'next/image';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -22,6 +21,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/shop', label: 'Shop' },
+    { href: '/orders', label: 'Orders' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
   ];
@@ -49,46 +49,16 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Cart + Auth + Hamburger */}
+        {/* Cart + Admin sign-out + Hamburger */}
         <div className="flex items-center gap-2">
           {session?.user && (
-            <Link
-              href="/orders"
-              className="hidden md:flex items-center gap-1 text-gray-700 font-medium hover:text-ghana-gold transition-colors px-2 py-2"
-              title="My Orders"
-            >
-              <Package className="w-5 h-5" />
-              <span className="text-sm">Orders</span>
-            </Link>
-          )}
-
-          {session?.user ? (
-            <div className="hidden md:flex items-center gap-2">
-              {session.user.image && (
-                <Image
-                  src={session.user.image}
-                  alt={session.user.name ?? 'User'}
-                  width={32}
-                  height={32}
-                  className="rounded-full border border-gray-200"
-                />
-              )}
-              <button
-                onClick={() => signOut()}
-                className="flex items-center gap-1 text-sm text-gray-700 font-medium hover:text-red-500 transition-colors px-2 py-1"
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign out
-              </button>
-            </div>
-          ) : (
             <button
-              onClick={() => signIn('google')}
-              className="hidden md:flex items-center gap-1 text-sm text-gray-700 font-medium hover:text-ghana-gold transition-colors px-2 py-1 border border-gray-200 rounded-lg"
+              onClick={() => void signOut()}
+              className="hidden md:flex items-center gap-1 text-sm text-gray-700 font-medium hover:text-red-500 transition-colors px-2 py-1"
+              title="Sign out"
             >
-              <LogIn className="w-4 h-4" />
-              Sign in
+              <LogOut className="w-4 h-4" />
+              Sign out
             </button>
           )}
 
@@ -126,36 +96,16 @@ export default function Navbar() {
               </li>
             ))}
             {session?.user && (
-              <li>
-                <Link
-                  href="/orders"
-                  className="flex items-center gap-2 text-gray-700 font-medium hover:text-ghana-gold transition-colors py-1"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <Package className="w-4 h-4" />
-                  My Orders
-                </Link>
-              </li>
-            )}
-            <li className="border-t border-gray-100 pt-2">
-              {session?.user ? (
+              <li className="border-t border-gray-100 pt-2">
                 <button
-                  onClick={() => { signOut(); setMenuOpen(false); }}
+                  onClick={() => { void signOut(); setMenuOpen(false); }}
                   className="flex items-center gap-2 text-red-500 font-medium hover:text-red-600 transition-colors py-1"
                 >
                   <LogOut className="w-4 h-4" />
-                  Sign out ({session.user.name})
+                  Sign out
                 </button>
-              ) : (
-                <button
-                  onClick={() => { signIn('google'); setMenuOpen(false); }}
-                  className="flex items-center gap-2 text-gray-700 font-medium hover:text-ghana-gold transition-colors py-1"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Sign in with Google
-                </button>
-              )}
-            </li>
+              </li>
+            )}
           </ul>
         </div>
       )}

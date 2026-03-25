@@ -10,14 +10,15 @@ export default auth((req: AuthenticatedRequest) => {
     const userEmail = req.auth?.user?.email;
     const adminEmail = process.env.ADMIN_EMAIL;
     if (!userEmail || !adminEmail || userEmail !== adminEmail) {
-      const signInUrl = new URL('/api/auth/signin', req.url);
-      signInUrl.searchParams.set('callbackUrl', req.nextUrl.pathname);
-      return NextResponse.redirect(signInUrl);
+      // Redirect to admin page which contains the login form
+      const adminUrl = new URL('/admin', req.url);
+      adminUrl.searchParams.set('callbackUrl', req.nextUrl.pathname);
+      return NextResponse.redirect(adminUrl);
     }
   }
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path+'],
 };

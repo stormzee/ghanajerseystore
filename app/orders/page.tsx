@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useState } from 'react';
 import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
 
 interface OrderItem {
@@ -43,80 +42,75 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function OrdersPage() {
-  const { data: session, status } = useSession();
+  const [email, setEmail] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searched, setSearched] = useState(false);
 
-  useEffect(() => {
-    const email = session?.user?.email;
-    if (!email) return;
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const r = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
-        const data = await r.json();
-        if (Array.isArray(data)) setOrders(data);
-        else setError('Failed to load orders.');
-      } catch {
+  const handleLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSearched(false);
+    try {
+      const r = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
+      const data = await r.json();
+      if (Array.isArray(data)) {
+        setOrders(data);
+        setSubmittedEmail(email);
+        setSearched(true);
+      } else {
         setError('Failed to load orders.');
-      } finally {
-        setLoading(false);
       }
-    };
-    void load();
-  }, [session]);
-
-  if (status === 'loading') {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center text-gray-400">
-        <p>Loading…</p>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <Package className="w-20 h-20 text-gray-200 mx-auto mb-6" />
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Track Your Orders</h1>
-        <p className="text-gray-500 mb-8">Sign in with Google to view your order history and delivery status.</p>
-        <button
-          onClick={() => signIn('google')}
-          className="bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors inline-flex items-center gap-2"
-        >
-          Sign in with Google
-        </button>
-      </div>
-    );
-  }
+    } catch {
+      setError('Failed to load orders.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">My Orders</h1>
-        <p className="text-gray-500 text-sm">Orders placed with <strong>{session.user?.email}</strong></p>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Track Your Orders</h1>
+        <p className="text-gray-500 text-sm">Enter the email address you used when placing your order.</p>
       </div>
 
-      {loading && (
-        <div className="text-center py-12 text-gray-400">Loading your orders…</div>
-      )}
+      <form onSubmit={handleLookup} className="flex gap-3 mb-8 flex-wrap">
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          placeholder="your@email.com"
+          className="flex-1 min-w-[220px] border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-black text-white font-bold px-6 py-2.5 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors disabled:opacity-50 text-sm"
+        >
+          {loading ? 'Looking up…' : 'Look up orders'}
+        </button>
+      </form>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-6">{error}</div>
       )}
 
-      {!loading && !error && orders.length === 0 && (
+      {searched && !loading && !error && orders.length === 0 && (
         <div className="text-center py-20 text-gray-400">
           <Package className="w-16 h-16 mx-auto mb-4 opacity-30" />
-          <p className="text-xl font-medium">No orders found for your account.</p>
-          <p className="text-sm mt-2">Make sure you used this email address when placing your order.</p>
+          <p className="text-xl font-medium">No orders found.</p>
+          <p className="text-sm mt-2">No orders were placed with <strong>{submittedEmail}</strong>.</p>
         </div>
       )}
 
       {orders.length > 0 && (
         <div className="space-y-6">
+          <p className="text-gray-500 text-sm">Showing orders for <strong>{submittedEmail}</strong></p>
           {orders.map(order => (
             <div key={order.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               {/* Order header */}
