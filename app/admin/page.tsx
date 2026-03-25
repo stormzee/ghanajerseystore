@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle,
@@ -212,6 +212,12 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const [tab, setTab] = useState<Tab>('orders');
 
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
   // Products state
   const [products, setProducts] = useState<Product[]>([]);
   const [productForm, setProductForm] = useState<Product | null | false>(false); // false = closed, null = new
@@ -284,16 +290,58 @@ export default function AdminPage() {
     return <div className="max-w-4xl mx-auto px-4 py-20 text-center text-gray-400">Loading…</div>;
   }
   if (!session) {
+    const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoginError('');
+      setLoginLoading(true);
+      const result = await signIn('credentials', {
+        email: loginEmail,
+        password: loginPassword,
+        redirect: false,
+      });
+      setLoginLoading(false);
+      if (result?.error) {
+        setLoginError('Invalid email or password.');
+      }
+    };
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Admin Panel</h1>
-        <p className="text-gray-500 mb-8">Sign in with your admin Google account to access this page.</p>
-        <button
-          onClick={() => signIn('google')}
-          className="bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors"
-        >
-          Sign in with Google
-        </button>
+      <div className="max-w-md mx-auto px-4 py-20">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">Admin Panel</h1>
+        <p className="text-gray-500 mb-8 text-center">Sign in to manage your store.</p>
+        <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm space-y-5">
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{loginError}</div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={loginEmail}
+              onChange={e => setLoginEmail(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="admin@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              value={loginPassword}
+              onChange={e => setLoginPassword(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="••••••••"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loginLoading}
+            className="w-full bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors disabled:opacity-50"
+          >
+            {loginLoading ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
       </div>
     );
   }
@@ -307,7 +355,15 @@ export default function AdminPage() {
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Admin Panel</h1>
           <p className="text-gray-500 text-sm">Signed in as <strong>{session.user?.email}</strong></p>
         </div>
-        <span className="bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase">Admin</span>
+        <div className="flex items-center gap-3">
+          <span className="bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase">Admin</span>
+          <button
+            onClick={() => void signOut()}
+            className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {error && (
