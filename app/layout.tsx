@@ -7,8 +7,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Ghana Jersey Store | Official Preorder',
-  description: 'Preorder official Ghana football jerseys. Support the Black Stars with authentic 2025 jerseys.',
+  title: 'adumpzkanta.store | Official Ghana Sportswear',
+  description: 'Shop authentic Ghana Black Stars jerseys, t-shirts, hoodies, shorts and accessories at adumpzkanta.store.',
 };
 
 export default async function RootLayout({
