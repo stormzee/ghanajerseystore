@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,8 +9,9 @@ import { products } from '@/lib/products';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart, ArrowLeft, Check } from 'lucide-react';
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = products.find(p => p.id === Number(params.id));
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const product = products.find(p => p.id === Number(id));
   if (!product) notFound();
 
   const { addItem } = useCart();
