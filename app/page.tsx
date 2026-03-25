@@ -43,7 +43,7 @@ export default async function HomePage() {
             <span className="text-ghana-gold">Black Stars</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Preorder your official Ghana football jersey and show your support for the Black Stars.
+            Shop official Ghana Black Stars jerseys, t-shirts, hoodies and more at adumpzkanta.store.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -65,8 +65,8 @@ export default async function HomePage() {
       {/* Featured Products */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Featured Jerseys</h2>
-          <p className="text-gray-500">The most popular picks from our 2025 collection</p>
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Featured Products</h2>
+          <p className="text-gray-500">The most popular picks from our collection</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {featured.map(product => (
@@ -78,7 +78,7 @@ export default async function HomePage() {
             href="/shop"
             className="inline-block bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors"
           >
-            View All Jerseys →
+            View All Products →
           </Link>
         </div>
       </section>
@@ -88,8 +88,8 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-extrabold mb-4">Be Part of the Movement</h2>
           <p className="text-green-100 text-lg mb-8 leading-relaxed">
-            Preorder your Ghana jersey today and join thousands of fans worldwide who proudly wear the Black Stars.
-            All jerseys ship after the official release date.
+            Shop authentic Ghana Black Stars jerseys, casual wear and accessories at adumpzkanta.store.
+            Show your pride wherever you are.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="bg-white/10 backdrop-blur rounded-lg px-6 py-4 text-center">

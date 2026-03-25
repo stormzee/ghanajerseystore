@@ -26,8 +26,20 @@ export async function ensureSchema(): Promise<void> {
       image       TEXT           NOT NULL DEFAULT '',
       description TEXT           NOT NULL DEFAULT '',
       sizes       JSONB          NOT NULL DEFAULT '["S","M","L","XL"]',
-      category    TEXT           NOT NULL DEFAULT 'home',
+      category    TEXT           NOT NULL DEFAULT 'jersey-home',
       created_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id                    SERIAL PRIMARY KEY,
+      name                  TEXT           NOT NULL,
+      email                 TEXT           NOT NULL UNIQUE,
+      password_hash         TEXT           NOT NULL,
+      reset_token           TEXT,
+      reset_token_expires   TIMESTAMPTZ,
+      created_at            TIMESTAMPTZ    NOT NULL DEFAULT NOW()
     )
   `);
 
@@ -49,6 +61,11 @@ export async function ensureSchema(): Promise<void> {
   // Add delivery_status column if it was missing from an existing table
   await db.query(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status TEXT NOT NULL DEFAULT 'pending'
+  `);
+
+  // Add user_id column to orders if not present (links guest orders to user accounts)
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
   `);
 
   // Seed products table from static list if empty

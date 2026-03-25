@@ -1,6 +1,7 @@
 import { getPool, ensureSchema } from '@/lib/db';
-import { Product } from '@/lib/products';
+import { Product, CATEGORY_LABELS, CATEGORY_GROUPS } from '@/lib/products';
 import ProductCard from '@/components/ProductCard';
+import ShopFilters from '@/components/ShopFilters';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,19 +23,43 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
-export default async function ShopPage() {
-  const products = await getProducts();
+interface ShopPageProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const { category } = await searchParams;
+  const allProducts = await getProducts();
+
+  const filtered = category
+    ? allProducts.filter(p => p.category === category)
+    : allProducts;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Our Jersey Collection</h1>
-        <p className="text-gray-500 text-lg">Official Ghana Black Stars jerseys for the 2025 season</p>
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Shop</h1>
+        <p className="text-gray-500 text-lg">Authentic Ghana Black Stars sportswear &amp; accessories</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+
+      {/* Category filter tabs */}
+      <ShopFilters
+        groups={CATEGORY_GROUPS}
+        labels={CATEGORY_LABELS}
+        activeCategory={category ?? ''}
+      />
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-xl font-medium">No products found in this category.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

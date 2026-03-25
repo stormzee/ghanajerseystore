@@ -10,11 +10,20 @@ export async function POST(request: Request) {
     const { customer_name, phone, email, location, notes, items, total_price } = body;
 
     await ensureSchema();
+
+    // Link order to authenticated user account if signed in
+    const session = await auth();
+    let userId: number | null = null;
+    if (session?.user?.id && session.user.id !== 'admin') {
+      const idNum = parseInt(session.user.id, 10);
+      if (!isNaN(idNum)) userId = idNum;
+    }
+
     const result = await getPool().query(
-      `INSERT INTO orders (customer_name, phone, email, location, notes, items, total_price)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO orders (customer_name, phone, email, location, notes, items, total_price, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id`,
-      [customer_name, phone, email || null, location, notes || null, JSON.stringify(items), total_price]
+      [customer_name, phone, email || null, location, notes || null, JSON.stringify(items), total_price, userId]
     );
 
     return NextResponse.json({ success: true, orderId: result.rows[0].id });
@@ -30,23 +39,32 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const emailParam = searchParams.get('email');
 
-    // If an email query param is present, return only that user's orders (for tracking).
-    // Admin can fetch all orders (no email filter) after authentication.
-    if (emailParam) {
+    const session = await auth();
+
+    // Admin-only: fetch all orders (no email filter)
+    if (!emailParam) {
+      if ((session?.user as { role?: string } | null)?.role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      const result = await getPool().query('SELECT * FROM orders ORDER BY created_at DESC');
+      return NextResponse.json(result.rows);
+    }
+
+    // Authenticated users can look up their own orders by email or via session
+    if (session?.user?.id && session.user.id !== 'admin' && session.user.email) {
+      // User is signed in — only allow fetching their own orders
       const result = await getPool().query(
-        'SELECT * FROM orders WHERE LOWER(email)=LOWER($1) ORDER BY created_at DESC',
-        [emailParam]
+        `SELECT * FROM orders WHERE (user_id = $1 OR LOWER(email) = LOWER($2)) ORDER BY created_at DESC`,
+        [parseInt(session.user.id, 10), session.user.email]
       );
       return NextResponse.json(result.rows);
     }
 
-    // Admin-only: fetch all orders
-    const session = await auth();
-    if (session?.user?.email !== process.env.ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const result = await getPool().query('SELECT * FROM orders ORDER BY created_at DESC');
+    // Guest lookup by email (no auth required, like before)
+    const result = await getPool().query(
+      'SELECT * FROM orders WHERE LOWER(email)=LOWER($1) ORDER BY created_at DESC',
+      [emailParam]
+    );
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Orders fetch error:', error);

@@ -6,6 +6,7 @@ import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle,
 } from 'lucide-react';
+import { CATEGORY_LABELS } from '@/lib/products';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ interface Order {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DELIVERY_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
-const CATEGORIES = ['home', 'away', 'training'] as const;
+const CATEGORIES = Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[];
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL'];
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
@@ -78,7 +79,7 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
   const [image, setImage] = useState(initial?.image ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [sizes, setSizes] = useState<string[]>(initial?.sizes ?? [...DEFAULT_SIZES]);
-  const [category, setCategory] = useState(initial?.category ?? 'home');
+  const [category, setCategory] = useState(initial?.category ?? 'jersey-home');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -143,7 +144,7 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
               <select value={category} onChange={e => setCategory(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ghana-gold text-sm bg-white">
-                {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
               </select>
             </div>
           </div>

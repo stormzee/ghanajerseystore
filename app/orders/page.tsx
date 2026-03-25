@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, FileText } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 interface OrderItem {
   name: string;
@@ -41,7 +43,22 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function InvoiceLink({ order }: { order: Order }) {
+  const href = `/invoice/${order.id}${order.email ? `?email=${encodeURIComponent(order.email)}` : ''}`;
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-ghana-gold transition-colors border border-gray-200 hover:border-ghana-gold rounded-lg px-3 py-1.5"
+    >
+      <FileText className="w-3.5 h-3.5" />
+      Invoice
+    </Link>
+  );
+}
+
 export default function OrdersPage() {
+  const { data: session, status: sessionStatus } = useSession();
   const [email, setEmail] = useState('');
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -49,17 +66,16 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
 
-  const handleLookup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const loadOrders = useCallback(async (lookupEmail: string, isAutoLoad = false) => {
     setLoading(true);
+    if (!isAutoLoad) setSearched(false);
     setError('');
-    setSearched(false);
     try {
-      const r = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
+      const r = await fetch(`/api/orders?email=${encodeURIComponent(lookupEmail)}`);
       const data = await r.json();
       if (Array.isArray(data)) {
         setOrders(data);
-        setSubmittedEmail(email);
+        setSubmittedEmail(lookupEmail);
         setSearched(true);
       } else {
         setError('Failed to load orders.');
@@ -69,32 +85,59 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Auto-load orders for authenticated users
+  useEffect(() => {
+    if (sessionStatus === 'authenticated' && session?.user?.email) {
+      void loadOrders(session.user.email, true);
+    }
+  }, [session?.user?.email, sessionStatus, loadOrders]);
+
+  const handleLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await loadOrders(email);
   };
+
+  const isSignedIn = sessionStatus === 'authenticated';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Track Your Orders</h1>
-        <p className="text-gray-500 text-sm">Enter the email address you used when placing your order.</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Your Orders</h1>
+        {isSignedIn ? (
+          <p className="text-gray-500 text-sm">Showing orders for <strong>{session?.user?.name ?? session?.user?.email}</strong></p>
+        ) : (
+          <p className="text-gray-500 text-sm">
+            <Link href="/auth/signin" className="text-ghana-gold font-semibold hover:underline">Sign in</Link> to see your orders automatically, or enter your email below.
+          </p>
+        )}
       </div>
 
-      <form onSubmit={handleLookup} className="flex gap-3 mb-8 flex-wrap">
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          placeholder="your@email.com"
-          className="flex-1 min-w-[220px] border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white font-bold px-6 py-2.5 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors disabled:opacity-50 text-sm"
-        >
-          {loading ? 'Looking up…' : 'Look up orders'}
-        </button>
-      </form>
+      {/* Guest email lookup (hidden when signed in) */}
+      {!isSignedIn && (
+        <form onSubmit={handleLookup} className="flex gap-3 mb-8 flex-wrap">
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            placeholder="your@email.com"
+            className="flex-1 min-w-[220px] border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-black text-white font-bold px-6 py-2.5 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors disabled:opacity-50 text-sm"
+          >
+            {loading ? 'Looking up…' : 'Look up orders'}
+          </button>
+        </form>
+      )}
+
+      {loading && (
+        <div className="text-center py-12 text-gray-400">Loading orders…</div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-6">{error}</div>
@@ -104,13 +147,20 @@ export default function OrdersPage() {
         <div className="text-center py-20 text-gray-400">
           <Package className="w-16 h-16 mx-auto mb-4 opacity-30" />
           <p className="text-xl font-medium">No orders found.</p>
-          <p className="text-sm mt-2">No orders were placed with <strong>{submittedEmail}</strong>.</p>
+          <p className="text-sm mt-2">
+            {isSignedIn
+              ? "You haven't placed any orders yet."
+              : <>No orders were placed with <strong>{submittedEmail}</strong>.</>
+            }
+          </p>
         </div>
       )}
 
       {orders.length > 0 && (
         <div className="space-y-6">
-          <p className="text-gray-500 text-sm">Showing orders for <strong>{submittedEmail}</strong></p>
+          {!isSignedIn && (
+            <p className="text-gray-500 text-sm">Showing orders for <strong>{submittedEmail}</strong></p>
+          )}
           {orders.map(order => (
             <div key={order.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               {/* Order header */}
@@ -126,6 +176,7 @@ export default function OrdersPage() {
                 <div className="flex items-center gap-3">
                   <StatusBadge status={order.delivery_status} />
                   <span className="font-bold text-gray-900">${order.total_price.toFixed(2)}</span>
+                  <InvoiceLink order={order} />
                 </div>
               </div>
 
