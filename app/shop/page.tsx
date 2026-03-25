@@ -8,7 +8,15 @@ async function getProducts(): Promise<Product[]> {
   try {
     await ensureSchema();
     const result = await getPool().query('SELECT * FROM products ORDER BY id ASC');
-    return result.rows.map(r => ({ ...r, sizes: Array.isArray(r.sizes) ? r.sizes : JSON.parse(r.sizes) }));
+    return result.rows.map(r => {
+      let sizes: string[] = ['S', 'M', 'L', 'XL'];
+      try {
+        sizes = Array.isArray(r.sizes) ? r.sizes : JSON.parse(r.sizes);
+      } catch {
+        // keep default sizes if parsing fails
+      }
+      return { ...r, sizes };
+    });
   } catch {
     return [];
   }

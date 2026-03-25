@@ -2,7 +2,9 @@ import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export default auth((req: NextRequest & { auth?: { user?: { email?: string | null } } | null }) => {
+type AuthenticatedRequest = NextRequest & { auth?: { user?: { email?: string | null } } | null };
+
+export default auth((req: AuthenticatedRequest) => {
   const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
   if (isAdminRoute) {
     const userEmail = req.auth?.user?.email;

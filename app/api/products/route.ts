@@ -17,6 +17,17 @@ export async function POST(request: Request) {
   }
 
   const { name, price, image, description, sizes, category } = await request.json();
+
+  const VALID_CATEGORIES = ['home', 'away', 'training'];
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return NextResponse.json({ error: 'name is required' }, { status: 400 });
+  }
+  if (typeof price !== 'number' || isNaN(price) || price < 0) {
+    return NextResponse.json({ error: 'price must be a non-negative number' }, { status: 400 });
+  }
+  if (!VALID_CATEGORIES.includes(category)) {
+    return NextResponse.json({ error: 'category must be one of: home, away, training' }, { status: 400 });
+  }
   await ensureSchema();
   const result = await getPool().query(
     `INSERT INTO products (name, price, image, description, sizes, category)

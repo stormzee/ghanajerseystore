@@ -32,16 +32,14 @@ export default function CartPage() {
     notes: '',
   });
 
-  // Auto-fill name and email from Google session
+  // Auto-fill name and email from Google session; clear form if the signed-in user changes
   useEffect(() => {
-    if (session?.user) {
-      setForm(prev => ({
-        ...prev,
-        customer_name: prev.customer_name || session.user?.name || '',
-        email: prev.email || session.user?.email || '',
-      }));
-    }
-  }, [session]);
+    setForm(prev => ({
+      ...prev,
+      customer_name: session?.user?.name || '',
+      email: session?.user?.email || '',
+    }));
+  }, [session?.user?.email]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));

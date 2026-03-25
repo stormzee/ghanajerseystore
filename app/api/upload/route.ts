@@ -6,7 +6,7 @@ import { randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(request: Request) {
