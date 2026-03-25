@@ -10,6 +10,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Provide a placeholder secret so next-auth can initialise without throwing at build time.
+# The real AUTH_SECRET must be supplied at container runtime via the environment.
+ENV AUTH_SECRET=build-time-placeholder
 RUN npm run build
 
 # ── Stage 3: production runner ────────────────────────────────────────────────

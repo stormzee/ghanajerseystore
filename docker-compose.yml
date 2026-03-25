@@ -24,8 +24,10 @@ services:
       DATABASE_URL:    postgresql://postgres:postgres@db:5432/ghanajerseystore
       AUTH_SECRET:     ${AUTH_SECRET}
       NEXTAUTH_URL:    ${NEXTAUTH_URL:-http://localhost:3000}
+      # Built-in admin account (role: admin) – full access to all features
       ADMIN_EMAIL:     ${ADMIN_EMAIL}
       ADMIN_PASSWORD:  ${ADMIN_PASSWORD}
+      # Roles: admin (env-based) | manager (DB-based, promote via Admin → Users tab) | user (default)
     volumes:
       - uploads_data:/app/public/uploads
     depends_on:

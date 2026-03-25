@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
-  Clock, RefreshCw, Truck, CheckCircle, XCircle,
+  Clock, RefreshCw, Truck, CheckCircle, XCircle, Users,
 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/products';
 
@@ -37,6 +37,14 @@ interface Order {
   items: OrderItem[];
   total_price: number;
   delivery_status: string;
+  created_at: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
   created_at: string;
 }
 
@@ -207,10 +215,14 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 
-type Tab = 'orders' | 'products';
+type Tab = 'orders' | 'products' | 'users';
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
+  const userRole = (session?.user as { role?: string } | null)?.role ?? 'user';
+  const isAdmin = userRole === 'admin';
+  const isManager = userRole === 'manager';
+
   const [tab, setTab] = useState<Tab>('orders');
 
   // Login form state
@@ -228,6 +240,10 @@ export default function AdminPage() {
   const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
   const [statusMsg, setStatusMsg] = useState<Record<number, string>>({});
 
+  // Users state (admin only)
+  const [users, setUsers] = useState<User[]>([]);
+  const [roleUpdating, setRoleUpdating] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -237,13 +253,20 @@ export default function AdminPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [prods, ords] = await Promise.all([
-          fetch('/api/products').then(r => r.json()),
+        const fetches: Promise<unknown>[] = [
           fetch('/api/orders').then(r => r.json()),
-        ]);
-        if (Array.isArray(prods)) setProducts(prods);
-        if (Array.isArray(ords)) setOrders(ords);
-        else if (ords?.error) setError(String(ords.error));
+        ];
+        if (isAdmin) {
+          fetches.push(
+            fetch('/api/products').then(r => r.json()),
+            fetch('/api/users').then(r => r.json()),
+          );
+        }
+        const [ords, prods, usrs] = await Promise.all(fetches);
+        if (Array.isArray(ords)) setOrders(ords as Order[]);
+        else if ((ords as { error?: string })?.error) setError(String((ords as { error?: string }).error));
+        if (Array.isArray(prods)) setProducts(prods as Product[]);
+        if (Array.isArray(usrs)) setUsers(usrs as User[]);
       } catch {
         setError('Failed to load data.');
       } finally {
@@ -251,7 +274,7 @@ export default function AdminPage() {
       }
     };
     void load();
-  }, [status]);
+  }, [status, isAdmin]);
 
   // Delivery status update
   const updateStatus = async (orderId: number, newStatus: string) => {
@@ -284,6 +307,21 @@ export default function AdminPage() {
       return existing ? prev.map(p => p.id === saved.id ? saved : p) : [saved, ...prev];
     });
     setProductForm(false);
+  };
+
+  // User role update (admin only)
+  const updateUserRole = async (userId: number, newRole: string) => {
+    setRoleUpdating(userId);
+    const res = await fetch('/api/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: userId, role: newRole }),
+    });
+    setRoleUpdating(null);
+    if (res.ok) {
+      const updated = await res.json() as User;
+      setUsers(prev => prev.map(u => u.id === userId ? updated : u));
+    }
   };
 
   // ── Not signed in ──────────────────────────────────────────────────────────
@@ -353,11 +391,18 @@ export default function AdminPage() {
       {/* Header */}
       <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Admin Panel</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
+            {isManager ? 'Manager Panel' : 'Admin Panel'}
+          </h1>
           <p className="text-gray-500 text-sm">Signed in as <strong>{session.user?.email}</strong></p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase">Admin</span>
+          {isAdmin && (
+            <span className="bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase">Admin</span>
+          )}
+          {isManager && (
+            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Manager</span>
+          )}
           <button
             onClick={() => void signOut()}
             className="text-sm text-gray-500 hover:text-red-500 transition-colors"
@@ -379,12 +424,22 @@ export default function AdminPage() {
         >
           Orders ({orders.length})
         </button>
-        <button
-          onClick={() => setTab('products')}
-          className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${tab === 'products' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
-        >
-          Products ({products.length})
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setTab('products')}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${tab === 'products' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            Products ({products.length})
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            onClick={() => setTab('users')}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${tab === 'users' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            Users ({users.length})
+          </button>
+        )}
       </div>
 
       {loading && <div className="text-center py-12 text-gray-400">Loading…</div>}
@@ -509,6 +564,68 @@ export default function AdminPage() {
           onSave={onProductSaved}
           onClose={() => setProductForm(false)}
         />
+      )}
+
+      {/* ── Users Tab ── */}
+      {!loading && tab === 'users' && isAdmin && (
+        users.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            <Users className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-xl">No registered users yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {['#', 'Name', 'Email', 'Role', 'Joined', 'Actions'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {users.map(u => (
+                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-mono text-gray-500">{u.id}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
+                    <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        u.role === 'manager'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                      {new Date(u.created_at).toISOString().replace('T', ' ').slice(0, 10)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {u.role === 'user' ? (
+                        <button
+                          disabled={roleUpdating === u.id}
+                          onClick={() => updateUserRole(u.id, 'manager')}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
+                        >
+                          {roleUpdating === u.id ? 'Updating…' : 'Promote to Manager'}
+                        </button>
+                      ) : u.role === 'manager' ? (
+                        <button
+                          disabled={roleUpdating === u.id}
+                          onClick={() => updateUserRole(u.id, 'user')}
+                          className="text-xs font-semibold text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+                        >
+                          {roleUpdating === u.id ? 'Updating…' : 'Demote to User'}
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
     </div>
   );
