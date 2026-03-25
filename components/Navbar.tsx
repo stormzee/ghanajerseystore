@@ -26,7 +26,7 @@ export default function Navbar() {
     { href: '/contact', label: 'Contact' },
   ];
 
-  const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin = (session?.user as { role?: string } | null)?.role === 'admin';
 
   return (
     <nav className={`sticky top-0 z-50 bg-white transition-shadow ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>

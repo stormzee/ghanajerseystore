@@ -11,7 +11,7 @@ const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (session?.user?.email !== process.env.ADMIN_EMAIL) {
+  if ((session?.user as { role?: string } | null)?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

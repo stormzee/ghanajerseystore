@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     const order = result.rows[0];
     const session = await auth();
 
-    const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+    const isAdmin = (session?.user as { role?: string } | null)?.role === 'admin';
     const isOwner =
       session?.user?.id &&
       session.user.id !== 'admin' &&

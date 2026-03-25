@@ -6,6 +6,7 @@ import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle,
 } from 'lucide-react';
+import { CATEGORY_LABELS } from '@/lib/products';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,21 +43,7 @@ interface Order {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DELIVERY_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
-const CATEGORIES = [
-  'jersey-home', 'jersey-away', 'jersey-training', 'jersey-goalkeeper',
-  't-shirt', 'hoodie', 'shorts', 'polo', 'accessories',
-] as const;
-const CATEGORY_LABELS: Record<string, string> = {
-  'jersey-home': 'Home Jersey',
-  'jersey-away': 'Away Jersey',
-  'jersey-training': 'Training Jersey',
-  'jersey-goalkeeper': 'Goalkeeper Jersey',
-  't-shirt': 'T-Shirt',
-  'hoodie': 'Hoodie',
-  'shorts': 'Shorts',
-  'polo': 'Polo Shirt',
-  'accessories': 'Accessories',
-};
+const CATEGORIES = Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[];
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL'];
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
