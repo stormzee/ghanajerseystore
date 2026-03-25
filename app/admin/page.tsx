@@ -35,6 +35,11 @@ export default async function AdminPage() {
         <span className="bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase">Internal</span>
       </div>
 
+      <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-amber-800 text-sm">
+        <span className="text-lg leading-none">⚠️</span>
+        <span><strong>Internal use only.</strong> This page is unprotected and should not be shared publicly. Add authentication before deploying to production.</span>
+      </div>
+
       {orders.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-xl">No orders yet.</p>

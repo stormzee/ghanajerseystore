@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <rect width="400" height="480" fill="#e8f5e9"/>
+  <!-- Jersey shape -->
+  <path d="M100 80 L60 140 L100 160 L100 400 L300 400 L300 160 L340 140 L300 80 L260 100 Q200 120 140 100 Z" fill="#004D2C" stroke="#FFC107" stroke-width="3"/>
+  <!-- Collar -->
+  <path d="M155 80 Q200 110 245 80" fill="none" stroke="#FFC107" stroke-width="4"/>
+  <!-- Training pattern -->
+  <line x1="100" y1="200" x2="300" y2="200" stroke="#FFC107" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="240" x2="300" y2="240" stroke="#FFC107" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="280" x2="300" y2="280" stroke="#FFC107" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="320" x2="300" y2="320" stroke="#FFC107" stroke-width="1" opacity="0.4"/>
+  <line x1="100" y1="360" x2="300" y2="360" stroke="#FFC107" stroke-width="1" opacity="0.4"/>
+  <!-- Black Star -->
+  <polygon points="200,180 212,215 250,215 220,237 231,272 200,250 169,272 180,237 150,215 188,215" fill="#FFC107"/>
+  <!-- Text label -->
+  <rect x="145" y="290" width="110" height="50" rx="8" fill="rgba(255,193,7,0.15)" stroke="#FFC107" stroke-width="1"/>
+  <text x="200" y="310" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="9" font-weight="bold">TRAINING</text>
+  <text x="200" y="328" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="9">GHANA 2025</text>
+  <text x="200" y="450" text-anchor="middle" fill="#006B3F" font-family="Arial" font-size="14" font-weight="bold">Ghana Training Jersey</text>
+  <text x="200" y="468" text-anchor="middle" fill="#888" font-family="Arial" font-size="11">Official 2025</text>
+</svg>

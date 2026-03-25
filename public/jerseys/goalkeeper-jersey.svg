@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <rect width="400" height="480" fill="#fff8e1"/>
+  <!-- Jersey shape -->
+  <path d="M100 80 L60 140 L100 160 L100 400 L300 400 L300 160 L340 140 L300 80 L260 100 Q200 120 140 100 Z" fill="#FFC107" stroke="#1a1a1a" stroke-width="3"/>
+  <!-- Collar -->
+  <path d="M155 80 Q200 110 245 80" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+  <!-- GK padding areas -->
+  <ellipse cx="140" cy="270" rx="25" ry="35" fill="#FF8C00" opacity="0.5"/>
+  <ellipse cx="260" cy="270" rx="25" ry="35" fill="#FF8C00" opacity="0.5"/>
+  <!-- Black Star -->
+  <polygon points="200,180 212,215 250,215 220,237 231,272 200,250 169,272 180,237 150,215 188,215" fill="#1a1a1a"/>
+  <!-- GK badge -->
+  <rect x="155" y="295" width="90" height="55" rx="8" fill="rgba(26,26,26,0.15)" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="200" y="315" text-anchor="middle" fill="#1a1a1a" font-family="Arial" font-size="9" font-weight="bold">GOALKEEPER</text>
+  <text x="200" y="333" text-anchor="middle" fill="#1a1a1a" font-family="Arial" font-size="9">GHANA 2025</text>
+  <text x="200" y="450" text-anchor="middle" fill="#e65c00" font-family="Arial" font-size="13" font-weight="bold">Ghana Goalkeeper Jersey</text>
+  <text x="200" y="468" text-anchor="middle" fill="#888" font-family="Arial" font-size="11">Official 2025</text>
+</svg>
