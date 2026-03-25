@@ -1,3 +1,5 @@
+import getDb from '@/lib/db';
+
 interface Order {
   id: number;
   customer_name: string;
@@ -10,20 +12,18 @@ interface Order {
   created_at: string;
 }
 
-async function getOrders(): Promise<Order[]> {
+function getOrders(): Order[] {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/orders`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) return [];
-    return res.json();
+    const db = getDb();
+    const rows = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all() as Record<string, unknown>[];
+    return rows.map(o => ({ ...o, items: JSON.parse(o['items'] as string) })) as Order[];
   } catch {
     return [];
   }
 }
 
 export default async function AdminPage() {
-  const orders = await getOrders();
+  const orders = getOrders();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
