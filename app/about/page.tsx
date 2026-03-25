@@ -14,7 +14,7 @@ export default function AboutPage() {
           <p className="text-green-100 leading-relaxed text-lg">
             Ghana Jersey Store was founded with one purpose: to make authentic Ghana Black Stars jerseys
             accessible to every fan across Ghana and around the world. We believe wearing the national
-            colours is more than fashion — it's a statement of pride, unity, and passion for the beautiful game.
+            colours is more than fashion — it&apos;s a statement of pride, unity, and passion for the beautiful game.
           </p>
         </div>
 

@@ -227,18 +227,23 @@ export default function AdminPage() {
   // Load data on mount
   useEffect(() => {
     if (status !== 'authenticated') return;
-    setLoading(true);
-    Promise.all([
-      fetch('/api/products').then(r => r.json()),
-      fetch('/api/orders').then(r => r.json()),
-    ])
-      .then(([prods, ords]) => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [prods, ords] = await Promise.all([
+          fetch('/api/products').then(r => r.json()),
+          fetch('/api/orders').then(r => r.json()),
+        ]);
         if (Array.isArray(prods)) setProducts(prods);
         if (Array.isArray(ords)) setOrders(ords);
-        else if (ords?.error) setError(ords.error);
-      })
-      .catch(() => setError('Failed to load data.'))
-      .finally(() => setLoading(false));
+        else if (ords?.error) setError(String(ords.error));
+      } catch {
+        setError('Failed to load data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
   }, [status]);
 
   // Delivery status update

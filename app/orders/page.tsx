@@ -49,18 +49,23 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (session?.user?.email) {
+    const email = session?.user?.email;
+    if (!email) return;
+    const load = async () => {
       setLoading(true);
       setError('');
-      fetch(`/api/orders?email=${encodeURIComponent(session.user.email)}`)
-        .then(r => r.json())
-        .then(data => {
-          if (Array.isArray(data)) setOrders(data);
-          else setError('Failed to load orders.');
-        })
-        .catch(() => setError('Failed to load orders.'))
-        .finally(() => setLoading(false));
-    }
+      try {
+        const r = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
+        const data = await r.json();
+        if (Array.isArray(data)) setOrders(data);
+        else setError('Failed to load orders.');
+      } catch {
+        setError('Failed to load orders.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
   }, [session]);
 
   if (status === 'loading') {
