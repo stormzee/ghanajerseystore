@@ -22,7 +22,15 @@ async function getUserByEmail(email: string) {
   }
 }
 
+if (!process.env.AUTH_SECRET) {
+  throw new Error(
+    'Missing AUTH_SECRET environment variable. ' +
+    'Generate one with: openssl rand -base64 32'
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   session: { strategy: 'jwt' },
   pages: {
