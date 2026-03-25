@@ -1,10 +1,22 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { products } from '@/lib/products';
+import { getPool, ensureSchema } from '@/lib/db';
+import { Product } from '@/lib/products';
 import ProductCard from '@/components/ProductCard';
 
-export default function HomePage() {
-  const featured = products.slice(0, 3);
+export const dynamic = 'force-dynamic';
+
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    await ensureSchema();
+    const result = await getPool().query('SELECT * FROM products ORDER BY id ASC LIMIT 3');
+    return result.rows.map(r => ({ ...r, sizes: Array.isArray(r.sizes) ? r.sizes : JSON.parse(r.sizes) }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const featured = await getFeaturedProducts();
 
   return (
     <>

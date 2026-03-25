@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useSession } from 'next-auth/react';
 
 const LOCATIONS = ['Accra', 'Kumasi', 'Tamale', 'Cape Coast', 'Takoradi', 'Other'];
 
@@ -18,6 +19,7 @@ interface OrderForm {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const { data: session } = useSession();
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,17 @@ export default function CartPage() {
     location: 'Accra',
     notes: '',
   });
+
+  // Auto-fill name and email from Google session
+  useEffect(() => {
+    if (session?.user) {
+      setForm(prev => ({
+        ...prev,
+        customer_name: prev.customer_name || session.user?.name || '',
+        email: prev.email || session.user?.email || '',
+      }));
+    }
+  }, [session]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));

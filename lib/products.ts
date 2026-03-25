@@ -8,7 +8,8 @@ export interface Product {
   category: 'home' | 'away' | 'training';
 }
 
-export const products: Product[] = [
+// Static product list used to seed the database on first run.
+export const staticProducts: Product[] = [
   {
     id: 1,
     name: "Ghana Home Jersey 2025",
@@ -64,3 +65,6 @@ export const products: Product[] = [
     category: "home"
   }
 ];
+
+// Keep the old export name so existing client-side pages still compile during transition.
+export const products = staticProducts;

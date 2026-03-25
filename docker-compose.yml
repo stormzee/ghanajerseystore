@@ -21,7 +21,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/ghanajerseystore
+      DATABASE_URL:         postgresql://postgres:postgres@db:5432/ghanajerseystore
+      GOOGLE_CLIENT_ID:     ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      AUTH_SECRET:          ${AUTH_SECRET}
+      ADMIN_EMAIL:          ${ADMIN_EMAIL}
+    volumes:
+      - uploads_data:/app/public/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -30,3 +36,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

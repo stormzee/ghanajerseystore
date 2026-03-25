@@ -1,7 +1,21 @@
-import { products } from '@/lib/products';
+import { getPool, ensureSchema } from '@/lib/db';
+import { Product } from '@/lib/products';
 import ProductCard from '@/components/ProductCard';
 
-export default function ShopPage() {
+export const dynamic = 'force-dynamic';
+
+async function getProducts(): Promise<Product[]> {
+  try {
+    await ensureSchema();
+    const result = await getPool().query('SELECT * FROM products ORDER BY id ASC');
+    return result.rows.map(r => ({ ...r, sizes: Array.isArray(r.sizes) ? r.sizes : JSON.parse(r.sizes) }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function ShopPage() {
+  const products = await getProducts();
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-8">
