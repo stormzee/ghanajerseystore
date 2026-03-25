@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <rect width="400" height="480" fill="#e8f5e9"/>
+  <!-- Smaller youth jersey (scaled) -->
+  <path d="M110 90 L75 145 L110 162 L110 390 L290 390 L290 162 L325 145 L290 90 L255 108 Q200 128 145 108 Z" fill="#006B3F" stroke="#FFC107" stroke-width="3"/>
+  <!-- Collar -->
+  <path d="M158 90 Q200 118 242 90" fill="none" stroke="#FFC107" stroke-width="4"/>
+  <!-- Cute pattern for youth -->
+  <circle cx="155" cy="250" r="8" fill="#FFC107" opacity="0.3"/>
+  <circle cx="245" cy="250" r="8" fill="#FFC107" opacity="0.3"/>
+  <circle cx="155" cy="290" r="8" fill="#FFC107" opacity="0.3"/>
+  <circle cx="245" cy="290" r="8" fill="#FFC107" opacity="0.3"/>
+  <circle cx="155" cy="330" r="8" fill="#FFC107" opacity="0.3"/>
+  <circle cx="245" cy="330" r="8" fill="#FFC107" opacity="0.3"/>
+  <!-- Black Star (slightly smaller) -->
+  <polygon points="200,178 210,207 241,207 218,226 227,255 200,236 173,255 182,226 159,207 190,207" fill="#FFC107"/>
+  <!-- Youth badge -->
+  <rect x="158" y="270" width="84" height="55" rx="8" fill="rgba(255,193,7,0.2)" stroke="#FFC107" stroke-width="1"/>
+  <text x="200" y="290" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="9" font-weight="bold">YOUTH</text>
+  <text x="200" y="305" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="9">GHANA 2025</text>
+  <text x="200" y="450" text-anchor="middle" fill="#006B3F" font-family="Arial" font-size="14" font-weight="bold">Ghana Youth Jersey</text>
+  <text x="200" y="468" text-anchor="middle" fill="#888" font-family="Arial" font-size="11">Official 2025</text>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <rect width="400" height="480" fill="#1a1a1a"/>
+  <!-- Jersey shape with special design -->
+  <path d="M100 80 L60 140 L100 160 L100 400 L300 400 L300 160 L340 140 L300 80 L260 100 Q200 120 140 100 Z" fill="#111111" stroke="#FFC107" stroke-width="4"/>
+  <!-- Collar -->
+  <path d="M155 80 Q200 110 245 80" fill="none" stroke="#FFC107" stroke-width="5"/>
+  <!-- Special edition diagonal stripes -->
+  <path d="M100 200 L200 160 L200 165 L100 205 Z" fill="#FFC107" opacity="0.6"/>
+  <path d="M100 230 L220 175 L220 180 L100 235 Z" fill="#FFC107" opacity="0.4"/>
+  <path d="M100 260 L240 195 L240 200 L100 265 Z" fill="#FFC107" opacity="0.3"/>
+  <!-- Gold border on sleeves -->
+  <path d="M60 140 L100 160" fill="none" stroke="#FFC107" stroke-width="4"/>
+  <path d="M300 160 L340 140" fill="none" stroke="#FFC107" stroke-width="4"/>
+  <!-- Large star cluster (50th anniversary) -->
+  <polygon points="200,165 208,188 234,188 213,203 221,226 200,211 179,226 187,203 166,188 192,188" fill="#FFC107"/>
+  <polygon points="165,195 170,210 185,210 174,219 178,234 165,225 152,234 156,219 145,210 160,210" fill="#FFC107" opacity="0.7"/>
+  <polygon points="235,195 240,210 255,210 244,219 248,234 235,225 222,234 226,219 215,210 230,210" fill="#FFC107" opacity="0.7"/>
+  <!-- 50th badge -->
+  <circle cx="200" cy="310" r="35" fill="#FFC107" opacity="0.15" stroke="#FFC107" stroke-width="2"/>
+  <text x="200" y="305" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="16" font-weight="bold">50</text>
+  <text x="200" y="322" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="8">YEARS</text>
+  <text x="200" y="450" text-anchor="middle" fill="#FFC107" font-family="Arial" font-size="13" font-weight="bold">Ghana Limited Edition</text>
+  <text x="200" y="468" text-anchor="middle" fill="#888" font-family="Arial" font-size="11">50th Anniversary</text>
+</svg>
