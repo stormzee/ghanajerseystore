@@ -39,7 +39,7 @@ export default function CartPage() {
       customer_name: session?.user?.name || '',
       email: session?.user?.email || '',
     }));
-  }, [session?.user?.email]);
+  }, [session?.user?.email, session?.user?.name]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
