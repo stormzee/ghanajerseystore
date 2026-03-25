@@ -41,9 +41,10 @@ export async function GET(request: Request) {
 
     const session = await auth();
 
-    // Admin-only: fetch all orders (no email filter)
+    // Admin or manager: fetch all orders (no email filter)
     if (!emailParam) {
-      if ((session?.user as { role?: string } | null)?.role !== 'admin') {
+      const role = (session?.user as { role?: string } | null)?.role;
+      if (role !== 'admin' && role !== 'manager') {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
       const result = await getPool().query('SELECT * FROM orders ORDER BY created_at DESC');

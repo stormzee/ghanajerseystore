@@ -37,10 +37,16 @@ export async function ensureSchema(): Promise<void> {
       name                  TEXT           NOT NULL,
       email                 TEXT           NOT NULL UNIQUE,
       password_hash         TEXT           NOT NULL,
+      role                  TEXT           NOT NULL DEFAULT 'user',
       reset_token           TEXT,
       reset_token_expires   TIMESTAMPTZ,
       created_at            TIMESTAMPTZ    NOT NULL DEFAULT NOW()
     )
+  `);
+
+  // Add role column to existing users tables that predate this migration
+  await db.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'
   `);
 
   await db.query(`
