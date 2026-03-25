@@ -1,4 +1,6 @@
-import getDb from '@/lib/db';
+import { getPool, ensureSchema } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 
 interface Order {
   id: number;
@@ -9,21 +11,21 @@ interface Order {
   notes: string | null;
   items: Array<{ name: string; size: string; quantity: number; price: number }>;
   total_price: number;
-  created_at: string;
+  created_at: Date;
 }
 
-function getOrders(): Order[] {
+async function getOrders(): Promise<Order[]> {
   try {
-    const db = getDb();
-    const rows = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all() as Record<string, unknown>[];
-    return rows.map(o => ({ ...o, items: JSON.parse(o['items'] as string) })) as Order[];
+    await ensureSchema();
+    const result = await getPool().query('SELECT * FROM orders ORDER BY created_at DESC');
+    return result.rows as Order[];
   } catch {
     return [];
   }
 }
 
 export default async function AdminPage() {
-  const orders = getOrders();
+  const orders = await getOrders();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -73,7 +75,9 @@ export default async function AdminPage() {
                     </ul>
                   </td>
                   <td className="px-4 py-3 font-bold text-gray-900">${order.total_price.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{order.created_at}</td>
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    {new Date(order.created_at).toISOString().replace('T', ' ').slice(0, 19)}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    hostname: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ghanajerseystore
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:     ["CMD", "pg_isready", "-U", "postgres", "-d", "ghanajerseystore"]
+      interval: 5s
+      timeout:  5s
+      retries:  10
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ghanajerseystore
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+
+volumes:
+  postgres_data:

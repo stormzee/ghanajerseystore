@@ -12,12 +12,12 @@
     "next": "15.5.14",
     "react": "^19",
     "react-dom": "^19",
-    "better-sqlite3": "^12.8.0",
-    "lucide-react": "^0.378.0"
+    "pg": "^8.13.3",
+    "lucide-react": "^1.6.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.10",
     "@types/node": "^20",
+    "@types/pg": "^8.11.10",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.0.1",

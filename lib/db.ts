@@ -1,28 +1,33 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import { Pool, types } from 'pg';
 
-const DB_PATH = path.join(process.cwd(), 'orders.db');
+// PostgreSQL returns NUMERIC as string by default to avoid float precision loss.
+// For this app prices have at most 2 decimal places, so a float is fine.
+types.setTypeParser(types.builtins.NUMERIC, (val) => parseFloat(val));
 
-let db: Database.Database;
+let pool: Pool | null = null;
+let schemaReady = false;
 
-function getDb() {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_name TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        email TEXT,
-        location TEXT NOT NULL,
-        notes TEXT,
-        items TEXT NOT NULL,
-        total_price REAL NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
-      )
-    `);
+export function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({ connectionString: process.env.DATABASE_URL });
   }
-  return db;
+  return pool;
 }
 
-export default getDb;
+export async function ensureSchema(): Promise<void> {
+  if (schemaReady) return;
+  await getPool().query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id            SERIAL PRIMARY KEY,
+      customer_name TEXT           NOT NULL,
+      phone         TEXT           NOT NULL,
+      email         TEXT,
+      location      TEXT           NOT NULL,
+      notes         TEXT,
+      items         JSONB          NOT NULL,
+      total_price   NUMERIC(10,2)  NOT NULL,
+      created_at    TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+    )
+  `);
+  schemaReady = true;
+}
