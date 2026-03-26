@@ -80,6 +80,33 @@ export async function ensureSchema(): Promise<void> {
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancellation_requested BOOLEAN NOT NULL DEFAULT FALSE
   `);
 
+  // ── Page views (visitor tracking) ────────────────────────────────────────
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS page_views (
+      id         SERIAL PRIMARY KEY,
+      path       TEXT           NOT NULL,
+      ip         TEXT,
+      country    TEXT,
+      city       TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  // Indexes for common analytics query patterns
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS page_views_created_at_idx ON page_views (created_at)
+  `);
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS page_views_ip_idx ON page_views (ip)
+  `);
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS page_views_country_idx ON page_views (country)
+  `);
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS page_views_path_idx ON page_views (path)
+  `);
+
   // Seed products table from static list if empty
   const { rows } = await db.query('SELECT COUNT(*) AS cnt FROM products');
   if (parseInt(rows[0].cnt, 10) === 0) {

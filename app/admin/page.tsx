@@ -6,6 +6,7 @@ import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle, Users,
   BarChart2, TrendingUp, ShoppingCart, DollarSign, AlertTriangle,
+  Globe, Eye,
 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/products';
 
@@ -68,6 +69,15 @@ interface AnalyticsData {
   topProducts: { name: string; unitsSold: number; revenue: number }[];
   dailyRevenue: { day: string; orders: number; revenue: number }[];
   categorySales: { category: string; orderCount: number; revenue: number }[];
+  visitors: {
+    totalViews: number;
+    viewsToday: number;
+    viewsThisMonth: number;
+    uniqueIps: number;
+    topPages: { path: string; count: number }[];
+    topCountries: { country: string; count: number }[];
+    dailyTraffic: { day: string; views: number; uniqueVisitors: number }[];
+  };
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -706,6 +716,147 @@ export default function AdminPage() {
                 ))}
               </div>
             </div>
+
+            {/* ── Visitor & Traffic Analytics ── */}
+            {analytics.visitors && (
+              <div className="space-y-6">
+                {/* Visitor Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                    <div className="bg-teal-100 rounded-lg p-2.5 flex-shrink-0">
+                      <Eye className="w-5 h-5 text-teal-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Total Page Views</p>
+                      <p className="text-2xl font-extrabold text-gray-900">{analytics.visitors.totalViews.toLocaleString()}</p>
+                      <p className="text-xs text-teal-600 mt-0.5">+{analytics.visitors.viewsThisMonth.toLocaleString()} this month</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                    <div className="bg-sky-100 rounded-lg p-2.5 flex-shrink-0">
+                      <Eye className="w-5 h-5 text-sky-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Views Today</p>
+                      <p className="text-2xl font-extrabold text-gray-900">{analytics.visitors.viewsToday.toLocaleString()}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">page loads</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                    <div className="bg-indigo-100 rounded-lg p-2.5 flex-shrink-0">
+                      <Users className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Unique IPs</p>
+                      <p className="text-2xl font-extrabold text-gray-900">{analytics.visitors.uniqueIps.toLocaleString()}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">distinct visitors</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                    <div className="bg-rose-100 rounded-lg p-2.5 flex-shrink-0">
+                      <Globe className="w-5 h-5 text-rose-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Countries</p>
+                      <p className="text-2xl font-extrabold text-gray-900">{analytics.visitors.topCountries.length}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">tracked so far</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Traffic Trend + Top Countries */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Daily Traffic (last 30 days) */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" /> Daily Traffic — Last 30 Days
+                    </h3>
+                    {analytics.visitors.dailyTraffic.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No traffic data yet.</p>
+                    ) : (() => {
+                      const maxViews = Math.max(...analytics.visitors.dailyTraffic.map(d => d.views), 1);
+                      return (
+                        <div className="flex items-end gap-1 h-28 w-full overflow-x-auto pb-1">
+                          {analytics.visitors.dailyTraffic.map(d => {
+                            const heightPct = Math.max((d.views / maxViews) * 100, 2);
+                            return (
+                              <div key={d.day} className="flex flex-col items-center gap-1 flex-1 min-w-[18px] group relative">
+                                <div
+                                  className="w-full bg-teal-400 rounded-t-sm transition-all group-hover:bg-teal-600"
+                                  style={{ height: `${heightPct}%` }}
+                                />
+                                <span className="text-[9px] text-gray-400 rotate-45 origin-top-left translate-x-1 w-10 overflow-hidden hidden sm:block">
+                                  {d.day.slice(5)}
+                                </span>
+                                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-10 shadow-lg">
+                                  {d.day}: {d.views} view{d.views !== 1 ? 's' : ''} ({d.uniqueVisitors} unique)
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Top Countries */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                      <Globe className="w-4 h-4" /> Visitors by Country
+                    </h3>
+                    {analytics.visitors.topCountries.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No location data yet.</p>
+                    ) : (() => {
+                      const maxCount = Math.max(...analytics.visitors.topCountries.map(c => c.count), 1);
+                      return (
+                        <div className="space-y-3">
+                          {analytics.visitors.topCountries.map(c => {
+                            const pct = Math.round((c.count / maxCount) * 100);
+                            return (
+                              <div key={c.country}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs font-medium text-gray-700">{c.country}</span>
+                                  <span className="text-xs text-gray-500">{c.count.toLocaleString()} views</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-teal-400 rounded-full" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Top Pages */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4" /> Most Visited Pages
+                  </h3>
+                  {analytics.visitors.topPages.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No page view data yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {analytics.visitors.topPages.map((p, i) => (
+                        <div key={p.path} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-5 h-5 rounded-full bg-gray-100 text-xs font-bold text-gray-500 flex items-center justify-center flex-shrink-0">
+                              {i + 1}
+                            </span>
+                            <span className="text-sm text-gray-800 truncate font-mono">{p.path}</span>
+                          </div>
+                          <span className="text-xs font-semibold text-teal-600 flex-shrink-0 ml-2">
+                            {p.count.toLocaleString()} views
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           </div>
         )
