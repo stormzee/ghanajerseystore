@@ -5,7 +5,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle, Users,
-  BarChart2, TrendingUp, ShoppingCart, DollarSign,
+  BarChart2, TrendingUp, ShoppingCart, DollarSign, AlertTriangle,
 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/products';
 
@@ -38,6 +38,7 @@ interface Order {
   items: OrderItem[];
   total_price: number;
   delivery_status: string;
+  cancellation_requested: boolean;
   created_at: string;
 }
 
@@ -718,60 +719,88 @@ export default function AdminPage() {
             <p className="text-xl">No orders yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {['Order #', 'Customer', 'Phone', 'Email', 'Location', 'Items', 'Total', 'Status', 'Date'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.map(order => (
-                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-gray-500">#{order.id}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900">{order.customer_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{order.phone}</td>
-                    <td className="px-4 py-3 text-gray-600">{order.email ?? '—'}</td>
-                    <td className="px-4 py-3 text-gray-600">{order.location}</td>
-                    <td className="px-4 py-3 text-gray-600">
-                      <ul className="space-y-0.5">
-                        {order.items.map((item, i) => (
-                          <li key={i}>{item.name} — {item.size} × {item.quantity}</li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">${order.total_price.toFixed(2)}</td>
-                    <td className="px-4 py-3 min-w-[180px]">
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={order.delivery_status}
-                          disabled={statusUpdating === order.id}
-                          onChange={e => updateStatus(order.id, e.target.value)}
-                          className="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-ghana-gold disabled:opacity-50"
-                        >
-                          {DELIVERY_STATUSES.map(s => (
-                            <option key={s} value={s}>
-                              {STATUS_CONFIG[s]?.label ?? s}
-                            </option>
-                          ))}
-                        </select>
-                        {statusMsg[order.id] ? (
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        ) : (
-                          <StatusBadge status={order.delivery_status} />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(order.created_at).toISOString().replace('T', ' ').slice(0, 16)}
-                    </td>
+          <>
+            {/* Cancellation request banner */}
+            {orders.some(o => o.cancellation_requested && o.delivery_status !== 'cancelled') && (
+              <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 flex items-center gap-2 text-orange-800 text-sm font-medium">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {orders.filter(o => o.cancellation_requested && o.delivery_status !== 'cancelled').length} order(s) have pending cancellation requests. Review them below.
+              </div>
+            )}
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    {['Order #', 'Customer', 'Phone', 'Email', 'Location', 'Items', 'Total', 'Status', 'Date'].map(h => (
+                      <th key={h} className="text-left px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {orders.map(order => (
+                    <tr
+                      key={order.id}
+                      className={`hover:bg-gray-50 transition-colors ${order.cancellation_requested && order.delivery_status !== 'cancelled' ? 'bg-orange-50' : ''}`}
+                    >
+                      <td className="px-4 py-3 font-mono text-gray-500">#{order.id}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{order.customer_name}</td>
+                      <td className="px-4 py-3 text-gray-600">{order.phone}</td>
+                      <td className="px-4 py-3 text-gray-600">{order.email ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{order.location}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        <ul className="space-y-0.5">
+                          {order.items.map((item, i) => (
+                            <li key={i}>{item.name} — {item.size} × {item.quantity}</li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">${order.total_price.toFixed(2)}</td>
+                      <td className="px-4 py-3 min-w-[220px]">
+                        {order.cancellation_requested && order.delivery_status !== 'cancelled' && (
+                          <div className="flex items-center gap-1 text-orange-600 text-xs font-semibold mb-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                            Cancellation requested
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={order.delivery_status}
+                            disabled={statusUpdating === order.id}
+                            onChange={e => updateStatus(order.id, e.target.value)}
+                            className="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-ghana-gold disabled:opacity-50"
+                          >
+                            {DELIVERY_STATUSES.map(s => (
+                              <option key={s} value={s}>
+                                {STATUS_CONFIG[s]?.label ?? s}
+                              </option>
+                            ))}
+                          </select>
+                          {statusMsg[order.id] ? (
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <StatusBadge status={order.delivery_status} />
+                          )}
+                        </div>
+                        {order.cancellation_requested && order.delivery_status !== 'cancelled' && (
+                          <button
+                            disabled={statusUpdating === order.id}
+                            onClick={() => updateStatus(order.id, 'cancelled')}
+                            className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-red-600 border border-red-200 rounded-md px-2 py-1 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            Approve Cancel
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                        {new Date(order.created_at).toISOString().replace('T', ' ').slice(0, 16)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )
       )}
 

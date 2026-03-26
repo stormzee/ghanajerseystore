@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, FileText } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, XCircle, RefreshCw, FileText, AlertTriangle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 interface OrderItem {
@@ -22,6 +22,7 @@ interface Order {
   items: OrderItem[];
   total_price: number;
   delivery_status: string;
+  cancellation_requested: boolean;
   created_at: string;
 }
 
@@ -65,6 +66,8 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelMsg, setCancelMsg] = useState<Record<number, string>>({});
 
   const loadOrders = useCallback(async (lookupEmail: string, isAutoLoad = false) => {
     setLoading(true);
@@ -97,6 +100,39 @@ export default function OrdersPage() {
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
     await loadOrders(email);
+  };
+
+  const handleCancel = async (order: Order) => {
+    const isPending = order.delivery_status === 'pending';
+    const confirmMsg = isPending
+      ? 'Are you sure you want to cancel this order?'
+      : 'Are you sure you want to request cancellation? The admin will review and process it.';
+    if (!confirm(confirmMsg)) return;
+
+    setCancellingId(order.id);
+    try {
+      const body: Record<string, string> = {};
+      if (!session && submittedEmail) body.email = submittedEmail;
+
+      const res = await fetch(`/api/orders/${order.id}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as Order & { error?: string };
+      if (!res.ok) {
+        setCancelMsg(prev => ({ ...prev, [order.id]: data.error ?? 'Failed to cancel.' }));
+      } else {
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, ...data } : o));
+        const msg = isPending ? 'Order cancelled.' : 'Cancellation requested. The admin will review it.';
+        setCancelMsg(prev => ({ ...prev, [order.id]: msg }));
+      }
+    } catch {
+      setCancelMsg(prev => ({ ...prev, [order.id]: 'Failed to cancel.' }));
+    } finally {
+      setCancellingId(null);
+      setTimeout(() => setCancelMsg(prev => { const n = { ...prev }; delete n[order.id]; return n; }), 5000);
+    }
   };
 
   const isSignedIn = sessionStatus === 'authenticated';
@@ -175,6 +211,12 @@ export default function OrdersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={order.delivery_status} />
+                  {order.cancellation_requested && order.delivery_status !== 'cancelled' && (
+                    <span className="inline-flex items-center gap-1 border text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-50 border-orange-200 text-orange-700">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Cancellation requested
+                    </span>
+                  )}
                   <span className="font-bold text-gray-900">${order.total_price.toFixed(2)}</span>
                   <InvoiceLink order={order} />
                 </div>
@@ -218,6 +260,38 @@ export default function OrdersPage() {
                     );
                   })}
                 </div>
+
+                {/* Cancel / Request Cancellation */}
+                {(() => {
+                  const s = order.delivery_status;
+                  const canCancel = s === 'pending';
+                  const canRequest = (s === 'processing' || s === 'shipped') && !order.cancellation_requested;
+                  if (!canCancel && !canRequest) return null;
+                  return (
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <button
+                        disabled={cancellingId === order.id}
+                        onClick={() => handleCancel(order)}
+                        className={`inline-flex items-center gap-1.5 text-xs font-semibold border rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50 ${
+                          canCancel
+                            ? 'text-red-600 border-red-200 hover:bg-red-50'
+                            : 'text-orange-600 border-orange-200 hover:bg-orange-50'
+                        }`}
+                      >
+                        {canCancel ? (
+                          <><XCircle className="w-3.5 h-3.5" />{cancellingId === order.id ? 'Cancelling…' : 'Cancel Order'}</>
+                        ) : (
+                          <><AlertTriangle className="w-3.5 h-3.5" />{cancellingId === order.id ? 'Requesting…' : 'Request Cancellation'}</>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
+                {cancelMsg[order.id] && (
+                  <p className={`mt-2 text-xs font-medium ${cancelMsg[order.id].startsWith('Order cancelled') || cancelMsg[order.id].startsWith('Cancellation requested') ? 'text-green-600' : 'text-red-600'}`}>
+                    {cancelMsg[order.id]}
+                  </p>
+                )}
               </div>
             </div>
           ))}
