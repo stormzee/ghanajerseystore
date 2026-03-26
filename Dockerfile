@@ -26,7 +26,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system --gid 1001 nodejs \
  && useradd  --system --uid 1001 --gid nodejs nextjs
 
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+RUN mkdir -p /app/public/uploads && chown nextjs:nodejs /app/public/uploads
 
 # standalone output is a self-contained server (no node_modules needed at runtime)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
