@@ -51,16 +51,17 @@ export async function ensureSchema(): Promise<void> {
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS orders (
-      id               SERIAL PRIMARY KEY,
-      customer_name    TEXT           NOT NULL,
-      phone            TEXT           NOT NULL,
-      email            TEXT,
-      location         TEXT           NOT NULL,
-      notes            TEXT,
-      items            JSONB          NOT NULL,
-      total_price      NUMERIC(10,2)  NOT NULL,
-      delivery_status  TEXT           NOT NULL DEFAULT 'pending',
-      created_at       TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+      id                      SERIAL PRIMARY KEY,
+      customer_name           TEXT           NOT NULL,
+      phone                   TEXT           NOT NULL,
+      email                   TEXT,
+      location                TEXT           NOT NULL,
+      notes                   TEXT,
+      items                   JSONB          NOT NULL,
+      total_price             NUMERIC(10,2)  NOT NULL,
+      delivery_status         TEXT           NOT NULL DEFAULT 'pending',
+      cancellation_requested  BOOLEAN        NOT NULL DEFAULT FALSE,
+      created_at              TIMESTAMPTZ    NOT NULL DEFAULT NOW()
     )
   `);
 
@@ -72,6 +73,11 @@ export async function ensureSchema(): Promise<void> {
   // Add user_id column to orders if not present (links guest orders to user accounts)
   await db.query(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
+  `);
+
+  // Add cancellation_requested column if not present
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancellation_requested BOOLEAN NOT NULL DEFAULT FALSE
   `);
 
   // Seed products table from static list if empty

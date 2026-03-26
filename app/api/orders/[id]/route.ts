@@ -24,7 +24,7 @@ export async function PUT(
 
   await ensureSchema();
   const result = await getPool().query(
-    'UPDATE orders SET delivery_status=$1 WHERE id=$2 RETURNING *',
+    'UPDATE orders SET delivery_status=$1, cancellation_requested=FALSE WHERE id=$2 RETURNING *',
     [delivery_status, id]
   );
   if (result.rowCount === 0) {
