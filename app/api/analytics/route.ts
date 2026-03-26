@@ -93,6 +93,55 @@ export async function GET() {
        ORDER BY revenue DESC`
     );
 
+    // ── Visitor / page-view metrics ───────────────────────────────────────────
+    const [
+      totalViewsRes,
+      viewsTodayRes,
+      viewsThisMonthRes,
+      uniqueIpsRes,
+      topPagesRes,
+      topCountriesRes,
+      dailyVisitorsRes,
+    ] = await Promise.all([
+      db.query(`SELECT COUNT(*) AS count FROM page_views`),
+      db.query(
+        `SELECT COUNT(*) AS count FROM page_views
+         WHERE created_at >= date_trunc('day', NOW())`
+      ),
+      db.query(
+        `SELECT COUNT(*) AS count FROM page_views
+         WHERE created_at >= date_trunc('month', NOW())`
+      ),
+      db.query(
+        `SELECT COUNT(DISTINCT ip) AS count FROM page_views WHERE ip IS NOT NULL`
+      ),
+      db.query(
+        `SELECT path, COUNT(*) AS count
+         FROM page_views
+         GROUP BY path
+         ORDER BY count DESC
+         LIMIT 10`
+      ),
+      db.query(
+        `SELECT country, COUNT(*) AS count
+         FROM page_views
+         WHERE country IS NOT NULL
+         GROUP BY country
+         ORDER BY count DESC
+         LIMIT 10`
+      ),
+      db.query(
+        `SELECT
+           date_trunc('day', created_at AT TIME ZONE 'UTC')::date::text AS day,
+           COUNT(*)                                                      AS views,
+           COUNT(DISTINCT ip)                                            AS unique_visitors
+         FROM page_views
+         WHERE created_at >= NOW() - INTERVAL '30 days'
+         GROUP BY day
+         ORDER BY day ASC`
+      ),
+    ]);
+
     return NextResponse.json({
       users: {
         total: parseInt(totalUsersRes.rows[0].count, 10),
@@ -130,6 +179,25 @@ export async function GET() {
         orderCount: parseInt(r.order_count, 10),
         revenue: parseFloat(r.revenue),
       })),
+      visitors: {
+        totalViews: parseInt(totalViewsRes.rows[0].count, 10),
+        viewsToday: parseInt(viewsTodayRes.rows[0].count, 10),
+        viewsThisMonth: parseInt(viewsThisMonthRes.rows[0].count, 10),
+        uniqueIps: parseInt(uniqueIpsRes.rows[0].count, 10),
+        topPages: topPagesRes.rows.map(r => ({
+          path: r.path as string,
+          count: parseInt(r.count, 10),
+        })),
+        topCountries: topCountriesRes.rows.map(r => ({
+          country: r.country as string,
+          count: parseInt(r.count, 10),
+        })),
+        dailyTraffic: dailyVisitorsRes.rows.map(r => ({
+          day: r.day as string,
+          views: parseInt(r.views, 10),
+          uniqueVisitors: parseInt(r.unique_visitors, 10),
+        })),
+      },
     });
   } catch (error) {
     console.error('Analytics error:', error);
