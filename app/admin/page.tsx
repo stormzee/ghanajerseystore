@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   Package, Edit2, Trash2, Plus, Upload, Check, X,
   Clock, RefreshCw, Truck, CheckCircle, XCircle, Users,
+  BarChart2, TrendingUp, ShoppingCart, DollarSign,
 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/products';
 
@@ -46,6 +47,26 @@ interface User {
   email: string;
   role: string;
   created_at: string;
+}
+
+// ─── Analytics Types ──────────────────────────────────────────────────────────
+
+interface AnalyticsData {
+  users: { total: number; newThisMonth: number };
+  orders: {
+    total: number;
+    byStatus: { status: string; count: number }[];
+    totalRevenue: number;
+    revenueThisMonth: number;
+    averageOrderValue: number;
+  };
+  products: {
+    total: number;
+    byCategory: { category: string; count: number }[];
+  };
+  topProducts: { name: string; unitsSold: number; revenue: number }[];
+  dailyRevenue: { day: string; orders: number; revenue: number }[];
+  categorySales: { category: string; orderCount: number; revenue: number }[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -215,7 +236,7 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 
-type Tab = 'orders' | 'products' | 'users';
+type Tab = 'analytics' | 'orders' | 'products' | 'users';
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -223,7 +244,7 @@ export default function AdminPage() {
   const isAdmin = userRole === 'admin';
   const isManager = userRole === 'manager';
 
-  const [tab, setTab] = useState<Tab>('orders');
+  const [tab, setTab] = useState<Tab>('analytics');
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -243,6 +264,10 @@ export default function AdminPage() {
   // Users state (admin only)
   const [users, setUsers] = useState<User[]>([]);
   const [roleUpdating, setRoleUpdating] = useState<number | null>(null);
+
+  // Analytics state (admin only)
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -274,6 +299,16 @@ export default function AdminPage() {
       }
     };
     void load();
+
+    // Load analytics separately (admin only)
+    if (isAdmin) {
+      setAnalyticsLoading(true);
+      fetch('/api/analytics')
+        .then(r => r.json())
+        .then(data => { if (!data.error) setAnalytics(data as AnalyticsData); })
+        .catch(() => { /* analytics failure is non-critical */ })
+        .finally(() => setAnalyticsLoading(false));
+    }
   }, [status, isAdmin]);
 
   // Delivery status update
@@ -417,7 +452,15 @@ export default function AdminPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit flex-wrap">
+        {isAdmin && (
+          <button
+            onClick={() => setTab('analytics')}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${tab === 'analytics' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            Analytics
+          </button>
+        )}
         <button
           onClick={() => setTab('orders')}
           className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${tab === 'orders' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
@@ -443,6 +486,229 @@ export default function AdminPage() {
       </div>
 
       {loading && <div className="text-center py-12 text-gray-400">Loading…</div>}
+
+      {/* ── Analytics Tab ── */}
+      {!loading && tab === 'analytics' && isAdmin && (
+        analyticsLoading ? (
+          <div className="text-center py-12 text-gray-400">Loading analytics…</div>
+        ) : !analytics ? (
+          <div className="text-center py-12 text-gray-400">No analytics data available.</div>
+        ) : (
+          <div className="space-y-8">
+
+            {/* ── Summary Cards ── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Total Revenue */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                <div className="bg-green-100 rounded-lg p-2.5 flex-shrink-0">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Total Revenue</p>
+                  <p className="text-2xl font-extrabold text-gray-900">${analytics.orders.totalRevenue.toFixed(2)}</p>
+                  <p className="text-xs text-green-600 mt-0.5">+${analytics.orders.revenueThisMonth.toFixed(2)} this month</p>
+                </div>
+              </div>
+
+              {/* Total Orders */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                <div className="bg-blue-100 rounded-lg p-2.5 flex-shrink-0">
+                  <ShoppingCart className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Total Orders</p>
+                  <p className="text-2xl font-extrabold text-gray-900">{analytics.orders.total}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Avg ${analytics.orders.averageOrderValue.toFixed(2)} / order</p>
+                </div>
+              </div>
+
+              {/* Total Users */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                <div className="bg-purple-100 rounded-lg p-2.5 flex-shrink-0">
+                  <Users className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Registered Users</p>
+                  <p className="text-2xl font-extrabold text-gray-900">{analytics.users.total}</p>
+                  <p className="text-xs text-purple-600 mt-0.5">+{analytics.users.newThisMonth} this month</p>
+                </div>
+              </div>
+
+              {/* Total Products */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                <div className="bg-amber-100 rounded-lg p-2.5 flex-shrink-0">
+                  <Package className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Products Listed</p>
+                  <p className="text-2xl font-extrabold text-gray-900">{analytics.products.total}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{analytics.products.byCategory.length} categories</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Order Status Breakdown ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4" /> Order Status Breakdown
+                </h3>
+                <div className="space-y-3">
+                  {analytics.orders.byStatus.map(({ status, count }) => {
+                    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG['pending'];
+                    const pct = analytics.orders.total > 0
+                      ? Math.round((count / analytics.orders.total) * 100)
+                      : 0;
+                    const barColors: Record<string, string> = {
+                      pending: 'bg-amber-400',
+                      processing: 'bg-blue-400',
+                      shipped: 'bg-purple-400',
+                      delivered: 'bg-green-500',
+                      cancelled: 'bg-red-400',
+                    };
+                    return (
+                      <div key={status}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`flex items-center gap-1 text-xs font-semibold ${cfg.color}`}>
+                            {cfg.icon} {cfg.label}
+                          </span>
+                          <span className="text-xs text-gray-500">{count} ({pct}%)</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${barColors[status] ?? 'bg-gray-400'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {analytics.orders.byStatus.length === 0 && (
+                    <p className="text-gray-400 text-sm">No orders yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Top Selling Products ── */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" /> Top Selling Products
+                </h3>
+                {analytics.topProducts.length === 0 ? (
+                  <p className="text-gray-400 text-sm">No sales data yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {analytics.topProducts.map((p, i) => (
+                      <div key={p.name} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-full bg-gray-100 text-xs font-bold text-gray-500 flex items-center justify-center flex-shrink-0">
+                            {i + 1}
+                          </span>
+                          <span className="text-sm text-gray-800 truncate">{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                          <span className="text-xs text-gray-400">{p.unitsSold} sold</span>
+                          <span className="text-xs font-semibold text-green-600">${p.revenue.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Revenue Trend (last 30 days) ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" /> Revenue Trend — Last 30 Days
+              </h3>
+              {analytics.dailyRevenue.length === 0 ? (
+                <p className="text-gray-400 text-sm">No revenue data in the last 30 days.</p>
+              ) : (() => {
+                const maxRev = Math.max(...analytics.dailyRevenue.map(d => d.revenue), 1);
+                return (
+                  <div className="flex items-end gap-1 h-28 w-full overflow-x-auto pb-1">
+                    {analytics.dailyRevenue.map(d => {
+                      const heightPct = Math.max((d.revenue / maxRev) * 100, 2);
+                      return (
+                        <div key={d.day} className="flex flex-col items-center gap-1 flex-1 min-w-[18px] group relative">
+                          <div
+                            className="w-full bg-ghana-gold rounded-t-sm transition-all group-hover:bg-amber-500"
+                            style={{ height: `${heightPct}%` }}
+                          />
+                          <span className="text-[9px] text-gray-400 rotate-45 origin-top-left translate-x-1 w-10 overflow-hidden hidden sm:block">
+                            {d.day.slice(5)}
+                          </span>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-10 shadow-lg">
+                            {d.day}: ${d.revenue.toFixed(2)} ({d.orders} order{d.orders !== 1 ? 's' : ''})
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── Category Sales ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <BarChart2 className="w-4 h-4" /> Revenue by Category
+              </h3>
+              {analytics.categorySales.length === 0 ? (
+                <p className="text-gray-400 text-sm">No category sales data yet.</p>
+              ) : (() => {
+                const maxRev = Math.max(...analytics.categorySales.map(c => c.revenue), 1);
+                return (
+                  <div className="space-y-3">
+                    {analytics.categorySales.map(c => {
+                      const pct = Math.round((c.revenue / maxRev) * 100);
+                      const label = (CATEGORY_LABELS as Record<string, string>)[c.category] ?? c.category;
+                      return (
+                        <div key={c.category}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-gray-700">{label}</span>
+                            <span className="text-xs text-gray-500">{c.orderCount} orders · ${c.revenue.toFixed(2)}</span>
+                          </div>
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-ghana-gold rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── User Behaviour: New Users Snapshot ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <Users className="w-4 h-4" /> User Behaviour Snapshot
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[
+                  { label: 'Total Users', value: analytics.users.total, sub: 'registered accounts' },
+                  { label: 'New This Month', value: analytics.users.newThisMonth, sub: 'sign-ups' },
+                  { label: 'Unique Buyers', value: (() => {
+                    const emailSet = new Set(orders.filter(o => o.email).map(o => o.email!));
+                    return emailSet.size;
+                  })(), sub: 'unique buyer emails' },
+                  { label: 'Avg Order Value', value: `$${analytics.orders.averageOrderValue.toFixed(2)}`, sub: 'per order' },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-2xl font-extrabold text-gray-900">{stat.value}</p>
+                    <p className="text-xs font-semibold text-gray-700 mt-0.5">{stat.label}</p>
+                    <p className="text-xs text-gray-400">{stat.sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )
+      )}
 
       {/* ── Orders Tab ── */}
       {!loading && tab === 'orders' && (
