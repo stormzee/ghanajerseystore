@@ -1,162 +1,65 @@
-# Ghana Jersey Store ⭐
+# jerseyvault.com
 
-A minimal, modern, and professional e-commerce website for selling Ghana football jerseys on a **preorder basis**.
+Modern Next.js ecommerce storefront for football jerseys and fan gear.
 
-![Homepage](https://github.com/user-attachments/assets/9a3c01ac-600a-465f-a9ff-44f5b3fd47c1)
+## What this version includes
+
+- Multi-club catalog (not Ghana-only)
+- Club discovery in `/shop` with:
+  - search by club/jersey text
+  - category filters
+  - league filter
+  - team filter
+- Admin product form with curated top-league team selector:
+  - England, Spain, Italy, France, Germany, Netherlands, Portugal, Turkey
+- MTN MoMo Collections **skeleton integration**:
+  - `/api/payments/momo/collections` request-to-pay endpoint
+  - checkout option wired to create MoMo payment requests
+  - order metadata stores payment method/provider/reference/status
 
 ## Tech Stack
 
-- **Frontend:** Next.js 15 (App Router, TypeScript)
-- **Styling:** Tailwind CSS with Ghana-inspired gold/green accents
-- **Backend:** Next.js API Routes
-- **Database:** PostgreSQL (via `pg` driver)
+- Next.js (App Router, TypeScript)
+- Tailwind CSS
+- PostgreSQL (`pg`)
+- NextAuth credentials auth
 
-## Features
-
-| Feature | Description |
-|---|---|
-| 🏠 Homepage | Hero banner, featured jerseys, call-to-action |
-| 🛍️ Shop | Full product grid (6 jerseys) with category badges |
-| 📦 Product Detail | Size selector, quantity control, Add to Cart |
-| 🛒 Cart | Item management, order summary, Place Preorder |
-| 📋 Preorder Form | Name, phone, email, location, notes — saved to PostgreSQL |
-| 🔔 Success State | "Your preorder has been received" confirmation |
-| 🔧 Admin Panel | `/admin` — view all orders in a table (no auth needed) |
-
-## 🐳 Local Preview with Docker Compose (recommended)
-
-The fastest way to run the full stack locally — **no Node.js or PostgreSQL installation needed**.
+## Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/stormzee/ghanajerseystore.git
-cd ghanajerseystore
-
-# Build and start both the app and the database
-docker compose up --build
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-The first `docker compose up --build` takes a few minutes to build the image. Subsequent runs are instant because Docker caches the layers.
-
-### What gets created
-
-| Service | Details |
-|---|---|
-| `app` | Next.js production server on port `3000` |
-| `db` | PostgreSQL 16 on port `5432` (internal only) |
-| `postgres_data` | Named Docker volume — orders persist across restarts |
-
-### Useful commands
-
-```bash
-# Run in the background
-docker compose up --build -d
-
-# View logs
-docker compose logs -f app
-
-# Stop everything
-docker compose down
-
-# Stop and wipe the database volume
-docker compose down -v
-```
-
-## Getting Started (without Docker)
-
-### Prerequisites
-- Node.js 20+
-- npm
-- PostgreSQL 14+ running locally
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/stormzee/ghanajerseystore.git
-cd ghanajerseystore
-
-# Install dependencies
 npm install
-
-# Set up environment (copy and edit with your Postgres credentials)
-cp .env.example .env
-
-# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
+## Required environment variables
 
 ```bash
-npm run build
-npm start
-```
-
-## Project Structure
-
-```
-├── Dockerfile                # Multi-stage production image (node:20-slim)
-├── docker-compose.yml        # app + postgres:16 stack
-├── .env.example              # Required environment variables
-├── app/
-│   ├── page.tsx              # Homepage
-│   ├── shop/page.tsx         # Product listing
-│   ├── product/[id]/page.tsx # Product detail
-│   ├── cart/page.tsx         # Cart + Preorder form
-│   ├── admin/page.tsx        # Admin orders view
-│   ├── about/page.tsx
-│   ├── contact/page.tsx
-│   └── api/
-│       ├── products/route.ts # GET products
-│       └── orders/route.ts   # GET/POST orders
-├── components/
-│   ├── Navbar.tsx
-│   ├── Footer.tsx
-│   └── ProductCard.tsx
-├── context/
-│   └── CartContext.tsx       # Client-side cart state
-├── lib/
-│   ├── db.ts                 # PostgreSQL pool + schema init
-│   └── products.ts           # Product seed data
-└── public/
-    └── jerseys/              # SVG jersey illustrations
-```
-
-## Environment Variables
-
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-
-Copy `.env.example` → `.env` and fill in your credentials:
-```
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ghanajerseystore
+AUTH_SECRET=replace_me
+NEXTAUTH_URL=http://localhost:3000
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin
 ```
 
-## Data Model
+## MTN MoMo Collections skeleton variables
 
-**Product** (`lib/products.ts`)
+Set these when you are ready to connect your MoMo app credentials:
+
+```bash
+MOMO_BASE_URL=https://sandbox.momodeveloper.mtn.com
+MOMO_TARGET_ENVIRONMENT=sandbox
+MOMO_COLLECTION_SUBSCRIPTION_KEY=
+MOMO_COLLECTION_API_USER=
+MOMO_COLLECTION_API_KEY=
+MOMO_COLLECTION_CALLBACK_URL=
+MOMO_COLLECTION_CURRENCY=GHS
 ```
-id | name | price | image | description | sizes | category
+
+If these are not set, the MoMo endpoint returns a guided configuration error so you can finish registration and wiring.
+
+## Validation
+
+```bash
+npm run lint
+npm run build
 ```
-
-**Order** (PostgreSQL `orders` table)
-```
-id | customer_name | phone | email | location | notes | items (JSONB) | total_price | created_at
-```
-
-## Admin Panel
-
-Visit `/admin` to view all preorders. No authentication required (simple internal view).
-
-## UI Design
-
-- White background, black text
-- Ghana Gold (`#FFC107`) and Ghana Green (`#006B3F`) accents
-- Mobile-first responsive layout
-- Custom SVG jersey illustrations

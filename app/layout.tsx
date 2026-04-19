@@ -8,8 +8,8 @@ import Footer from '@/components/Footer';
 import PageTracker from '@/components/PageTracker';
 
 export const metadata: Metadata = {
-  title: 'adumpzkanta.store | Official Ghana Sportswear',
-  description: 'Shop authentic Ghana Black Stars jerseys, t-shirts, hoodies, shorts and accessories at adumpzkanta.store.',
+  title: 'jerseyvault.com | Jerseys & Fan Gear',
+  description: 'Shop football jerseys, sportswear, and fan accessories from top clubs across Europe at jerseyvault.com.',
 };
 
 export default async function RootLayout({

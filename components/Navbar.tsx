@@ -34,7 +34,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-black hover:text-ghana-gold transition-colors">
           <Star className="w-5 h-5 fill-ghana-gold text-ghana-gold" />
-          adumpzkanta.store
+          jerseyvault.com
         </Link>
 
         {/* Desktop Nav */}

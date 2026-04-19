@@ -36,14 +36,14 @@ export default async function HomePage() {
         </div>
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-ghana-gold text-black text-sm font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider">
-            Official Preorder 2025
+            New Season Drop
           </span>
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-            Wear the{' '}
-            <span className="text-ghana-gold">Black Stars</span>
+            Find Your{' '}
+            <span className="text-ghana-gold">Matchday Look</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Shop official Ghana Black Stars jerseys, t-shirts, hoodies and more at adumpzkanta.store.
+            Shop football jerseys and fan gear from top clubs across Europe at jerseyvault.com.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -88,8 +88,8 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-extrabold mb-4">Be Part of the Movement</h2>
           <p className="text-green-100 text-lg mb-8 leading-relaxed">
-            Shop authentic Ghana Black Stars jerseys, casual wear and accessories at adumpzkanta.store.
-            Show your pride wherever you are.
+            Explore jersey drops, casual wear, and supporter essentials from Europe&apos;s biggest leagues.
+            Back your club wherever you are.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="bg-white/10 backdrop-blur rounded-lg px-6 py-4 text-center">
@@ -98,18 +98,18 @@ export default async function HomePage() {
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg px-6 py-4 text-center">
               <div className="text-2xl font-bold text-ghana-gold">100%</div>
-              <div className="text-sm text-green-100">Authentic jerseys</div>
+              <div className="text-sm text-green-100">Club-inspired styles</div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg px-6 py-4 text-center">
-              <div className="text-2xl font-bold text-ghana-gold">2025</div>
-              <div className="text-sm text-green-100">Official collection</div>
+              <div className="text-2xl font-bold text-ghana-gold">8+</div>
+              <div className="text-sm text-green-100">Top leagues covered</div>
             </div>
           </div>
           <Link
             href="/shop"
             className="inline-block mt-8 bg-ghana-gold text-black font-bold px-8 py-3 rounded-lg hover:bg-yellow-400 transition-colors"
           >
-            Preorder Now
+            Shop Jerseys
           </Link>
         </div>
       </section>

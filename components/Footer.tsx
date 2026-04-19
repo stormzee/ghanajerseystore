@@ -9,10 +9,10 @@ export default function Footer() {
         <div>
           <h3 className="text-ghana-gold font-bold text-lg mb-3 flex items-center gap-2">
             <Star className="w-4 h-4 fill-ghana-gold text-ghana-gold" />
-            adumpzkanta.store
+            jerseyvault.com
           </h3>
           <p className="text-sm text-gray-400 leading-relaxed">
-            Your official destination for Ghana Black Stars jerseys and sportswear. Support the national team with authentic gear.
+            Your destination for club jerseys, football sportswear, and fan accessories from Europe&apos;s top leagues.
           </p>
         </div>
 
@@ -43,13 +43,13 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-gray-400">
             <li>📍 Accra, Ghana</li>
             <li>📞 +233 20 000 0000</li>
-            <li>✉️ hello@adumpzkanta.store</li>
+            <li>✉️ hello@jerseyvault.com</li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-gray-800 text-center text-xs text-gray-500 py-4">
-        © {new Date().getFullYear()} adumpzkanta.store. All rights reserved. | Go Black Stars! 🌟
+        © {new Date().getFullYear()} jerseyvault.com. All rights reserved.
       </div>
     </footer>
   );
