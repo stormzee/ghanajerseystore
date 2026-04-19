@@ -317,7 +317,7 @@ export default function CartPage() {
               </select>
               {form.payment_method === 'momo' && (
                 <p className="mt-1 text-xs text-gray-500">
-                  This uses a MoMo API skeleton. Configure MOMO_* environment variables to enable live request-to-pay.
+                  You will receive an MTN MoMo prompt on your phone to approve payment.
                 </p>
               )}
             </div>

@@ -19,6 +19,8 @@ interface MomoConfig {
   currency: string;
 }
 
+const GHANA_MOMO_MSISDN_PATTERN = /^233\d{9}$/;
+
 function getMomoConfig(): { config?: MomoConfig; missing: string[] } {
   const baseUrl = process.env.MOMO_BASE_URL ?? 'https://sandbox.momodeveloper.mtn.com';
   const targetEnvironment = process.env.MOMO_TARGET_ENVIRONMENT ?? 'sandbox';
@@ -93,8 +95,8 @@ export async function requestMomoCollection(payload: MomoCollectionsPayload) {
   }
 
   const normalizedPhone = normalizePhone(payload.phoneNumber);
-  if (!/^233\d{9}$/.test(normalizedPhone)) {
-    return { ok: false as const, status: 400, error: 'Phone must be a valid Ghana number.' };
+  if (!GHANA_MOMO_MSISDN_PATTERN.test(normalizedPhone)) {
+    return { ok: false as const, status: 400, error: 'Phone must be a valid Ghana MTN MoMo number (+233).' };
   }
 
   const referenceId = randomUUID();

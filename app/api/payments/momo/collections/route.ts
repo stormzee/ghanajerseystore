@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(result, { status: result.status });
-  } catch {
+  } catch (error) {
+    console.error('MoMo collections request error:', error);
     return NextResponse.json({ error: 'Invalid payment request.' }, { status: 400 });
   }
 }

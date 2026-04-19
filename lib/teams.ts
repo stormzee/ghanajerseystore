@@ -1,9 +1,9 @@
 export const TOP_LEAGUE_TEAMS: Record<string, string[]> = {
   England: [
-    'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Burnley',
-    'Chelsea', 'Crystal Palace', 'Everton', 'Fulham', 'Liverpool', 'Manchester City',
-    'Manchester United', 'Newcastle United', 'Nottingham Forest', 'Sunderland',
-    'Tottenham Hotspur', 'West Ham United', 'Wolverhampton Wanderers', 'Leeds United',
+    'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Chelsea',
+    'Crystal Palace', 'Everton', 'Fulham', 'Ipswich Town', 'Leicester City', 'Liverpool',
+    'Manchester City', 'Manchester United', 'Newcastle United', 'Nottingham Forest',
+    'Southampton', 'Tottenham Hotspur', 'West Ham United', 'Wolverhampton Wanderers',
   ],
   Spain: [
     'Alaves', 'Athletic Club', 'Atletico Madrid', 'Barcelona', 'Celta Vigo', 'Espanyol',
@@ -23,7 +23,7 @@ export const TOP_LEAGUE_TEAMS: Record<string, string[]> = {
   ],
   Germany: [
     'Augsburg', 'Bayer Leverkusen', 'Bayern Munich', 'Bochum', 'Borussia Dortmund',
-    'Borussia Monchengladbach', 'Eintracht Frankfurt', 'Freiburg', 'Heidenheim',
+    'Borussia Mönchengladbach', 'Eintracht Frankfurt', 'Freiburg', 'Heidenheim',
     'Hoffenheim', 'Holstein Kiel', 'Mainz 05', 'RB Leipzig', 'St Pauli', 'Stuttgart',
     'Union Berlin', 'Werder Bremen', 'Wolfsburg',
   ],

@@ -45,14 +45,17 @@ export default function ShopFilters({
   return (
     <div className="mb-8 space-y-4">
       <form method="GET" action="/shop" className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <input type="hidden" name="category" value={activeCategory} />
+        <label htmlFor="shop-search" className="sr-only">Search clubs and jerseys</label>
         <input
+          id="shop-search"
           name="q"
           defaultValue={query}
           placeholder="Search by club or jersey..."
           className="md:col-span-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ghana-gold"
         />
+        <label htmlFor="shop-league" className="sr-only">Filter by league</label>
         <select
+          id="shop-league"
           name="league"
           defaultValue={activeLeague}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ghana-gold"
@@ -60,7 +63,9 @@ export default function ShopFilters({
           <option value="">All leagues</option>
           {leagues.map(league => <option key={league} value={league}>{league}</option>)}
         </select>
+        <label htmlFor="shop-team" className="sr-only">Filter by club</label>
         <select
+          id="shop-team"
           name="team"
           defaultValue={activeTeam}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ghana-gold"
