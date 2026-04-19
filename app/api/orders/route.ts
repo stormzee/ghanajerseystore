@@ -22,7 +22,11 @@ export async function POST(request: Request) {
       payment_status,
     } = body;
 
-    const resolvedPaymentMethod = PAYMENT_METHOD_VALUES.includes(payment_method) ? payment_method : PAYMENT_METHODS.CASH;
+    const rawPaymentMethod = payment_method || PAYMENT_METHODS.CASH;
+    if (!PAYMENT_METHOD_VALUES.includes(rawPaymentMethod)) {
+      return NextResponse.json({ error: 'Invalid payment_method' }, { status: 400 });
+    }
+    const resolvedPaymentMethod = rawPaymentMethod;
     const resolvedPaymentStatus = typeof payment_status === 'string' && payment_status.trim() ? payment_status : 'pending';
 
     await ensureSchema();

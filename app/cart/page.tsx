@@ -53,7 +53,7 @@ export default function CartPage() {
     setLoading(true);
     setError('');
     try {
-      let mtnMomoReference: string | null = null;
+      let paymentReference: string | null = null;
       let paymentStatus = 'pending';
       if (form.payment_method === PAYMENT_METHODS.MOMO) {
         const momoRes = await fetch('/api/payments/momo/collections', {
@@ -70,7 +70,7 @@ export default function CartPage() {
         });
         const momoData = await momoRes.json() as { referenceId?: string; error?: string };
         if (!momoRes.ok) throw new Error(momoData.error ?? 'MoMo request failed');
-        mtnMomoReference = momoData.referenceId ?? null;
+        paymentReference = momoData.referenceId ?? null;
         paymentStatus = 'requested';
       }
 
@@ -88,7 +88,7 @@ export default function CartPage() {
           })),
           total_price: totalPrice,
           payment_provider: form.payment_method === PAYMENT_METHODS.MOMO ? 'mtn-momo-collections' : null,
-          payment_reference: mtnMomoReference,
+          payment_reference: paymentReference,
           payment_status: paymentStatus,
         }),
       });
