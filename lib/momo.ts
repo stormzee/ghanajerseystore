@@ -124,7 +124,7 @@ export async function requestMomoCollection(payload: MomoCollectionsPayload) {
     }),
   });
 
-  if (!response.ok && response.status !== 202) {
+  if (!response.ok) {
     const text = await response.text();
     return {
       ok: false as const,
