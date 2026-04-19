@@ -50,7 +50,7 @@ export default function ShopFilters({
           id="shop-search"
           name="q"
           defaultValue={query}
-          placeholder="Search by club or jersey..."
+          placeholder="Search clubs and jerseys..."
           className="md:col-span-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ghana-gold"
         />
         <label htmlFor="shop-league" className="sr-only">Filter by league</label>

@@ -23,7 +23,7 @@ export const TOP_LEAGUE_TEAMS: Record<string, string[]> = {
   ],
   Germany: [
     'Augsburg', 'Bayer Leverkusen', 'Bayern Munich', 'Bochum', 'Borussia Dortmund',
-    'Borussia Mönchengladbach', 'Eintracht Frankfurt', 'Freiburg', 'Heidenheim',
+    'Borussia Monchengladbach', 'Eintracht Frankfurt', 'Freiburg', 'Heidenheim',
     'Hoffenheim', 'Holstein Kiel', 'Mainz 05', 'RB Leipzig', 'St Pauli', 'Stuttgart',
     'Union Berlin', 'Werder Bremen', 'Wolfsburg',
   ],

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useSession } from 'next-auth/react';
+import { PAYMENT_METHODS, PaymentMethod } from '@/lib/payments';
 
 const LOCATIONS = ['Accra', 'Kumasi', 'Tamale', 'Cape Coast', 'Takoradi', 'Other'];
 
@@ -15,7 +16,7 @@ interface OrderForm {
   email: string;
   location: string;
   notes: string;
-  payment_method: 'cash' | 'momo';
+  payment_method: PaymentMethod;
 }
 
 export default function CartPage() {
@@ -31,7 +32,7 @@ export default function CartPage() {
     email: '',
     location: 'Accra',
     notes: '',
-    payment_method: 'cash',
+    payment_method: PAYMENT_METHODS.CASH,
   });
 
   // Auto-fill name and email from Google session; clear form if the signed-in user changes
@@ -52,9 +53,9 @@ export default function CartPage() {
     setLoading(true);
     setError('');
     try {
-      let momoReference: string | null = null;
+      let mtnMomoReference: string | null = null;
       let paymentStatus = 'pending';
-      if (form.payment_method === 'momo') {
+      if (form.payment_method === PAYMENT_METHODS.MOMO) {
         const momoRes = await fetch('/api/payments/momo/collections', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -69,7 +70,7 @@ export default function CartPage() {
         });
         const momoData = await momoRes.json() as { referenceId?: string; error?: string };
         if (!momoRes.ok) throw new Error(momoData.error ?? 'MoMo request failed');
-        momoReference = momoData.referenceId ?? null;
+        mtnMomoReference = momoData.referenceId ?? null;
         paymentStatus = 'requested';
       }
 
@@ -86,8 +87,8 @@ export default function CartPage() {
             price: i.product.price,
           })),
           total_price: totalPrice,
-          payment_provider: form.payment_method === 'momo' ? 'mtn-momo-collections' : null,
-          payment_reference: momoReference,
+          payment_provider: form.payment_method === PAYMENT_METHODS.MOMO ? 'mtn-momo-collections' : null,
+          payment_reference: mtnMomoReference,
           payment_status: paymentStatus,
         }),
       });
@@ -312,10 +313,10 @@ export default function CartPage() {
                 onChange={handleFormChange}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-ghana-gold bg-white"
               >
-                <option value="cash">Cash on Delivery</option>
-                <option value="momo">MTN MoMo (Collections API)</option>
+                <option value={PAYMENT_METHODS.CASH}>Cash on Delivery</option>
+                <option value={PAYMENT_METHODS.MOMO}>MTN MoMo (Collections API)</option>
               </select>
-              {form.payment_method === 'momo' && (
+              {form.payment_method === PAYMENT_METHODS.MOMO && (
                 <p className="mt-1 text-xs text-gray-500">
                   You will receive an MTN MoMo prompt on your phone to approve payment.
                 </p>

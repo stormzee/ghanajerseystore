@@ -96,7 +96,7 @@ export async function requestMomoCollection(payload: MomoCollectionsPayload) {
 
   const normalizedPhone = normalizePhone(payload.phoneNumber);
   if (!GHANA_MOMO_MSISDN_PATTERN.test(normalizedPhone)) {
-    return { ok: false as const, status: 400, error: 'Phone must be a valid Ghana MTN MoMo number (+233).' };
+    return { ok: false as const, status: 400, error: 'Current MoMo checkout supports Ghana MTN numbers only (+233).' };
   }
 
   const referenceId = randomUUID();

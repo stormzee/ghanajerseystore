@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPool, ensureSchema } from '@/lib/db';
 import { auth } from '@/auth';
+import { PAYMENT_METHOD_VALUES, PAYMENT_METHODS } from '@/lib/payments';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,8 +22,7 @@ export async function POST(request: Request) {
       payment_status,
     } = body;
 
-    const validPaymentMethods = ['cash', 'momo'];
-    const resolvedPaymentMethod = validPaymentMethods.includes(payment_method) ? payment_method : 'cash';
+    const resolvedPaymentMethod = PAYMENT_METHOD_VALUES.includes(payment_method) ? payment_method : PAYMENT_METHODS.CASH;
     const resolvedPaymentStatus = typeof payment_status === 'string' && payment_status.trim() ? payment_status : 'pending';
 
     await ensureSchema();
