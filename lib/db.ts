@@ -27,8 +27,17 @@ export async function ensureSchema(): Promise<void> {
       description TEXT           NOT NULL DEFAULT '',
       sizes       JSONB          NOT NULL DEFAULT '["S","M","L","XL"]',
       category    TEXT           NOT NULL DEFAULT 'jersey-home',
+      league      TEXT           NOT NULL DEFAULT '',
+      team        TEXT           NOT NULL DEFAULT '',
       created_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW()
     )
+  `);
+
+  await db.query(`
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS league TEXT NOT NULL DEFAULT ''
+  `);
+  await db.query(`
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS team TEXT NOT NULL DEFAULT ''
   `);
 
   await db.query(`
@@ -59,6 +68,10 @@ export async function ensureSchema(): Promise<void> {
       notes                   TEXT,
       items                   JSONB          NOT NULL,
       total_price             NUMERIC(10,2)  NOT NULL,
+      payment_method          TEXT           NOT NULL DEFAULT 'cash',
+      payment_provider        TEXT,
+      payment_reference       TEXT,
+      payment_status          TEXT           NOT NULL DEFAULT 'pending',
       delivery_status         TEXT           NOT NULL DEFAULT 'pending',
       cancellation_requested  BOOLEAN        NOT NULL DEFAULT FALSE,
       created_at              TIMESTAMPTZ    NOT NULL DEFAULT NOW()
@@ -73,6 +86,18 @@ export async function ensureSchema(): Promise<void> {
   // Add user_id column to orders if not present (links guest orders to user accounts)
   await db.query(`
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
+  `);
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'cash'
+  `);
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_provider TEXT
+  `);
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reference TEXT
+  `);
+  await db.query(`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending'
   `);
 
   // Add cancellation_requested column if not present
@@ -113,9 +138,9 @@ export async function ensureSchema(): Promise<void> {
     const { staticProducts } = await import('./products');
     for (const p of staticProducts) {
       await db.query(
-        `INSERT INTO products (name, price, image, description, sizes, category)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [p.name, p.price, p.image, p.description, JSON.stringify(p.sizes), p.category]
+        `INSERT INTO products (name, price, image, description, sizes, category, league, team)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [p.name, p.price, p.image, p.description, JSON.stringify(p.sizes), p.category, p.league, p.team]
       );
     }
   }

@@ -9,6 +9,7 @@ import {
   Globe, Eye,
 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/products';
+import { TOP_LEAGUES, getTeamsForLeague } from '@/lib/teams';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,8 @@ interface Product {
   description: string;
   sizes: string[];
   category: string;
+  league: string;
+  team: string;
 }
 
 interface OrderItem {
@@ -120,6 +123,8 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
   const [description, setDescription] = useState(initial?.description ?? '');
   const [sizes, setSizes] = useState<string[]>(initial?.sizes ?? [...DEFAULT_SIZES]);
   const [category, setCategory] = useState(initial?.category ?? 'jersey-home');
+  const [league, setLeague] = useState(initial?.league ?? TOP_LEAGUES[0]);
+  const [team, setTeam] = useState(initial?.team ?? getTeamsForLeague(initial?.league ?? TOP_LEAGUES[0])[0] ?? '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -144,7 +149,7 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
     e.preventDefault();
     setSaving(true);
     setError('');
-    const payload = { name, price: parseFloat(price), image, description, sizes, category };
+    const payload = { name, price: parseFloat(price), image, description, sizes, category, league, team };
     const url = initial ? `/api/products/${initial.id}` : '/api/products';
     const method = initial ? 'PUT' : 'POST';
     const res = await fetch(url, {
@@ -185,6 +190,34 @@ function ProductForm({ initial, onSave, onClose }: ProductFormProps) {
               <select value={category} onChange={e => setCategory(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ghana-gold text-sm bg-white">
                 {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">League *</label>
+              <select
+                value={league}
+                onChange={e => {
+                  const nextLeague = e.target.value;
+                  const nextTeams = getTeamsForLeague(nextLeague);
+                  setLeague(nextLeague);
+                  setTeam(nextTeams[0] ?? '');
+                }}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ghana-gold text-sm bg-white"
+              >
+                {TOP_LEAGUES.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Team *</label>
+              <select
+                value={team}
+                onChange={e => setTeam(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ghana-gold text-sm bg-white"
+              >
+                {getTeamsForLeague(league).map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
           </div>
@@ -984,6 +1017,9 @@ export default function AdminPage() {
                       <span className="text-sm font-bold text-gray-900 whitespace-nowrap">${parseFloat(String(p.price)).toFixed(2)}</span>
                     </div>
                     <p className="text-xs text-gray-500 mb-3 line-clamp-2">{p.description}</p>
+                    <p className="text-xs text-gray-600 mb-3">
+                      <span className="font-semibold">{p.team}</span> · {p.league}
+                    </p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400">{p.sizes?.join(', ')}</span>
                       <div className="flex gap-2">

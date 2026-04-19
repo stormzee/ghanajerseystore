@@ -1,13 +1,33 @@
 import { NextResponse } from 'next/server';
 import { getPool, ensureSchema } from '@/lib/db';
 import { auth } from '@/auth';
+import { PAYMENT_METHOD_VALUES, PAYMENT_METHODS } from '@/lib/payments';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { customer_name, phone, email, location, notes, items, total_price } = body;
+    const {
+      customer_name,
+      phone,
+      email,
+      location,
+      notes,
+      items,
+      total_price,
+      payment_method,
+      payment_provider,
+      payment_reference,
+      payment_status,
+    } = body;
+
+    const rawPaymentMethod = payment_method || PAYMENT_METHODS.CASH;
+    if (!PAYMENT_METHOD_VALUES.includes(rawPaymentMethod)) {
+      return NextResponse.json({ error: 'Invalid payment_method' }, { status: 400 });
+    }
+    const resolvedPaymentMethod = rawPaymentMethod;
+    const resolvedPaymentStatus = typeof payment_status === 'string' && payment_status.trim() ? payment_status : 'pending';
 
     await ensureSchema();
 
@@ -20,10 +40,26 @@ export async function POST(request: Request) {
     }
 
     const result = await getPool().query(
-      `INSERT INTO orders (customer_name, phone, email, location, notes, items, total_price, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO orders (
+         customer_name, phone, email, location, notes, items, total_price, user_id,
+         payment_method, payment_provider, payment_reference, payment_status
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING id`,
-      [customer_name, phone, email || null, location, notes || null, JSON.stringify(items), total_price, userId]
+      [
+        customer_name,
+        phone,
+        email || null,
+        location,
+        notes || null,
+        JSON.stringify(items),
+        total_price,
+        userId,
+        resolvedPaymentMethod,
+        payment_provider || null,
+        payment_reference || null,
+        resolvedPaymentStatus,
+      ]
     );
 
     return NextResponse.json({ success: true, orderId: result.rows[0].id });

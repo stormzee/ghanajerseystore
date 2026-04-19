@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useSession } from 'next-auth/react';
+import { PAYMENT_METHODS, PaymentMethod } from '@/lib/payments';
 
 const LOCATIONS = ['Accra', 'Kumasi', 'Tamale', 'Cape Coast', 'Takoradi', 'Other'];
 
@@ -15,6 +16,7 @@ interface OrderForm {
   email: string;
   location: string;
   notes: string;
+  payment_method: PaymentMethod;
 }
 
 export default function CartPage() {
@@ -30,6 +32,7 @@ export default function CartPage() {
     email: '',
     location: 'Accra',
     notes: '',
+    payment_method: PAYMENT_METHODS.CASH,
   });
 
   // Auto-fill name and email from Google session; clear form if the signed-in user changes
@@ -50,6 +53,27 @@ export default function CartPage() {
     setLoading(true);
     setError('');
     try {
+      let paymentReference: string | null = null;
+      let paymentStatus = 'pending';
+      if (form.payment_method === PAYMENT_METHODS.MOMO) {
+        const momoRes = await fetch('/api/payments/momo/collections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: totalPrice,
+            currency: 'GHS',
+            phoneNumber: form.phone,
+            externalId: `jerseyvault-${Date.now()}`,
+            payerMessage: 'jerseyvault order payment',
+            payeeNote: 'Jersey purchase',
+          }),
+        });
+        const momoData = await momoRes.json() as { referenceId?: string; error?: string };
+        if (!momoRes.ok) throw new Error(momoData.error ?? 'MoMo request failed');
+        paymentReference = momoData.referenceId ?? null;
+        paymentStatus = 'requested';
+      }
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,6 +87,9 @@ export default function CartPage() {
             price: i.product.price,
           })),
           total_price: totalPrice,
+          payment_provider: form.payment_method === PAYMENT_METHODS.MOMO ? 'mtn-momo-collections' : null,
+          payment_reference: paymentReference,
+          payment_status: paymentStatus,
         }),
       });
       if (!res.ok) throw new Error('Failed to place order');
@@ -77,11 +104,11 @@ export default function CartPage() {
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <div className="text-6xl mb-6">🎉</div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Preorder Received!</h1>
+        <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+          <div className="text-6xl mb-6">🎉</div>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Order Received!</h1>
         <p className="text-gray-600 text-lg mb-8">
-          Your preorder has been received. We will contact you shortly with confirmation details.
+          Your order has been received. We will contact you shortly with confirmation details.
         </p>
         <Link
           href="/shop"
@@ -188,17 +215,17 @@ export default function CartPage() {
                 onClick={() => setShowForm(true)}
                 className="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors"
               >
-                Place Preorder
+                Continue to Checkout
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Inline Preorder Form */}
+      {/* Inline Checkout Form */}
       {showForm && (
         <div className="mt-10 bg-white border border-gray-200 rounded-xl p-8 max-w-2xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Preorder Details</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Checkout Details</h2>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4">
               {error}
@@ -275,6 +302,28 @@ export default function CartPage() {
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-ghana-gold resize-none"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Payment Method <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="payment_method"
+                required
+                value={form.payment_method}
+                onChange={handleFormChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-ghana-gold bg-white"
+              >
+                <option value={PAYMENT_METHODS.CASH}>Cash on Delivery</option>
+                <option value={PAYMENT_METHODS.MOMO}>MTN MoMo (Collections API)</option>
+              </select>
+              {form.payment_method === PAYMENT_METHODS.MOMO && (
+                <p className="mt-1 text-xs text-gray-500">
+                  You will receive an MTN MoMo prompt on your phone to approve payment. If you do not approve,
+                  the order stays pending and you can retry checkout.
+                </p>
+              )}
+            </div>
+
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
@@ -288,10 +337,10 @@ export default function CartPage() {
                 disabled={loading}
                 className="flex-1 bg-black text-white font-bold py-3 rounded-lg hover:bg-ghana-gold hover:text-black transition-colors disabled:opacity-50"
               >
-                {loading ? 'Placing Order…' : 'Confirm Preorder'}
-              </button>
-            </div>
-          </form>
+                  {loading ? 'Placing Order…' : 'Confirm Order'}
+                </button>
+              </div>
+            </form>
         </div>
       )}
     </div>

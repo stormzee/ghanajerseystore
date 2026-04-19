@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart, ArrowLeft, Check } from 'lucide-react';
-import { Product } from '@/lib/products';
+import { Product, CATEGORY_LABELS } from '@/lib/products';
 import { useEffect } from 'react';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -40,12 +40,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const categoryLabels: Record<string, string> = {
-    home: 'Home',
-    away: 'Away',
-    training: 'Training',
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <Link href="/shop" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-8 transition-colors">
@@ -69,9 +63,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         {/* Details */}
         <div className="flex flex-col">
           <span className="inline-block bg-ghana-gold text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider w-fit mb-3">
-            {categoryLabels[product.category] ?? product.category}
+            {CATEGORY_LABELS[product.category as keyof typeof CATEGORY_LABELS] ?? product.category}
           </span>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
+          <p className="text-sm text-gray-500 mb-2">{product.team} · {product.league}</p>
           <p className="text-3xl font-bold text-gray-900 mb-4">${product.price.toFixed(2)}</p>
           <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
 

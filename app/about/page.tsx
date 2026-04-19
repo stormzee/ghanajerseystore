@@ -4,7 +4,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">About Ghana Jersey Store</h1>
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">About jerseyvault.com</h1>
         <div className="h-1 w-20 bg-ghana-gold rounded-full" />
       </div>
 
@@ -12,40 +12,38 @@ export default function AboutPage() {
         <div className="bg-ghana-green text-white rounded-xl p-8">
           <h2 className="text-2xl font-bold mb-4 text-ghana-gold">Our Mission</h2>
           <p className="text-green-100 leading-relaxed text-lg">
-            Ghana Jersey Store was founded with one purpose: to make authentic Ghana Black Stars jerseys
-            accessible to every fan across Ghana and around the world. We believe wearing the national
-            colours is more than fashion — it&apos;s a statement of pride, unity, and passion for the beautiful game.
+            jerseyvault.com exists to make quality football jerseys and fan wear easy to access in Ghana.
+            We focus on clubs across Europe&apos;s top leagues so supporters can find gear for the teams they love.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border border-gray-200 rounded-xl p-6">
             <div className="text-3xl mb-3">⭐</div>
-            <h3 className="font-bold text-xl mb-2">Authentic Quality</h3>
+            <h3 className="font-bold text-xl mb-2">Wide Club Selection</h3>
             <p className="text-gray-600">
-              Every jersey in our store is officially licensed and manufactured to the highest standards.
-              Wear what the players wear.
+              Discover jerseys and fan pieces from major teams in England, Spain, Italy, France, Germany and more.
             </p>
           </div>
           <div className="border border-gray-200 rounded-xl p-6">
-            <div className="text-3xl mb-3">🇬🇭</div>
-            <h3 className="font-bold text-xl mb-2">Supporting Ghana Football</h3>
+            <div className="text-3xl mb-3">🧵</div>
+            <h3 className="font-bold text-xl mb-2">Quality You Can Trust</h3>
             <p className="text-gray-600">
-              A portion of every sale goes back into grassroots football development programs across Ghana.
+              We curate products for comfort, fit, and everyday durability on and off matchday.
             </p>
           </div>
           <div className="border border-gray-200 rounded-xl p-6">
             <div className="text-3xl mb-3">🚚</div>
             <h3 className="font-bold text-xl mb-2">Nationwide Delivery</h3>
             <p className="text-gray-600">
-              We deliver to all major cities including Accra, Kumasi, Tamale, Cape Coast, and Takoradi.
+              Orders are delivered across Ghana, with tracking updates from checkout to doorstep.
             </p>
           </div>
           <div className="border border-gray-200 rounded-xl p-6">
             <div className="text-3xl mb-3">💬</div>
-            <h3 className="font-bold text-xl mb-2">Dedicated Support</h3>
+            <h3 className="font-bold text-xl mb-2">Responsive Support</h3>
             <p className="text-gray-600">
-              Our team is here to help with sizing, preorders, and any questions about your jersey.
+              Need help with sizing, availability, or payment? Our team is ready to assist.
             </p>
           </div>
         </div>

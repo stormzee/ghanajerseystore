@@ -28,6 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-ghana-gold transition-colors leading-tight">
             {product.name}
           </h3>
+          <p className="text-xs text-gray-500 mb-1">{product.team} · {product.league}</p>
           <p className="text-gray-500 text-sm mb-3 line-clamp-2">{product.description}</p>
           <div className="flex items-center justify-between">
             <span className="font-bold text-lg text-gray-900">${product.price.toFixed(2)}</span>

@@ -31,7 +31,7 @@ export default function ContactPage() {
               <span className="text-2xl">✉️</span>
               <div>
                 <p className="font-semibold text-gray-900">Email</p>
-                <p className="text-gray-600">hello@ghanajerseystore.com</p>
+                <p className="text-gray-600">hello@jerseyvault.com</p>
               </div>
             </li>
             <li className="flex items-start gap-4">

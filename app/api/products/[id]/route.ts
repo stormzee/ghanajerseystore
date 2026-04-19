@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getPool, ensureSchema } from '@/lib/db';
 import { auth } from '@/auth';
+import { CATEGORY_LABELS } from '@/lib/products';
+import { TOP_LEAGUES, getTeamsForLeague } from '@/lib/teams';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,13 +16,31 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const { name, price, image, description, sizes, category } = await request.json();
+  const { name, price, image, description, sizes, category, league, team } = await request.json();
+  const validCategories = Object.keys(CATEGORY_LABELS);
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return NextResponse.json({ error: 'name is required' }, { status: 400 });
+  }
+  if (typeof price !== 'number' || isNaN(price) || price < 0) {
+    return NextResponse.json({ error: 'price must be a non-negative number' }, { status: 400 });
+  }
+  if (!validCategories.includes(category)) {
+    return NextResponse.json({ error: 'category is invalid' }, { status: 400 });
+  }
+  if (!TOP_LEAGUES.includes(league)) {
+    return NextResponse.json({ error: 'league is invalid' }, { status: 400 });
+  }
+  if (!getTeamsForLeague(league).includes(team)) {
+    return NextResponse.json({ error: 'team is invalid for the selected league' }, { status: 400 });
+  }
+
   await ensureSchema();
   const result = await getPool().query(
     `UPDATE products
-     SET name=$1, price=$2, image=$3, description=$4, sizes=$5, category=$6
-     WHERE id=$7 RETURNING *`,
-    [name, price, image, description, JSON.stringify(sizes), category, id]
+     SET name=$1, price=$2, image=$3, description=$4, sizes=$5, category=$6, league=$7, team=$8
+     WHERE id=$9 RETURNING *`,
+    [name, price, image, description, JSON.stringify(sizes), category, league, team, id]
   );
   if (result.rowCount === 0) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
