@@ -22,6 +22,8 @@ export async function POST(request: Request) {
     return NextResponse.json(result, { status: result.status });
   } catch (error) {
     console.error('MoMo collections request error:', error);
-    return NextResponse.json({ error: 'Invalid payment request.' }, { status: 400 });
+    const message = error instanceof Error ? error.message : 'Invalid payment request.';
+    const status = message.toLowerCase().includes('invalid') ? 400 : 502;
+    return NextResponse.json({ error: message }, { status });
   }
 }

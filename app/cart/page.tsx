@@ -318,7 +318,8 @@ export default function CartPage() {
               </select>
               {form.payment_method === PAYMENT_METHODS.MOMO && (
                 <p className="mt-1 text-xs text-gray-500">
-                  You will receive an MTN MoMo prompt on your phone to approve payment.
+                  You will receive an MTN MoMo prompt on your phone to approve payment. If you do not approve,
+                  the order stays pending and you can retry checkout.
                 </p>
               )}
             </div>
